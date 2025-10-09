@@ -1,0 +1,84 @@
+// Configuración de la API
+const API_BASE_URL = import.meta.env.VITE_URL_HOST || 'http://localhost:3000';
+
+export const API_ENDPOINTS = {
+  // Autenticación
+  LOGIN: `${API_BASE_URL}/api/auth/login`,
+  LOGOUT: `${API_BASE_URL}/api/auth/logout`,
+  PROFILE: `${API_BASE_URL}/api/auth/profile`,
+  CHANGE_PASSWORD: `${API_BASE_URL}/api/auth/change-password`,
+  REFRESH_TOKEN: `${API_BASE_URL}/api/auth/refresh`,
+  
+  // Usuarios
+  USERS: `${API_BASE_URL}/api/users`,
+  USER_PROFILE: `${API_BASE_URL}/api/users/profile`,
+  
+  // User Services (Servicios Personalizados por Usuario)
+  USER_DASHBOARD: `${API_BASE_URL}/api/user/dashboard`,
+  USER_SERVICES_CREATE: `${API_BASE_URL}/api/user/services/create`,
+  USER_SERVICES_LIST: `${API_BASE_URL}/api/user/services/list`,
+  USER_SERVICE_UPDATE: (serviceId: string) => `${API_BASE_URL}/api/user/services/${serviceId}`,
+  USER_SERVICE_DELETE: (serviceId: string) => `${API_BASE_URL}/api/user/services/${serviceId}`,
+  USER_SERVICE_CHAT: (serviceId: string) => `${API_BASE_URL}/api/user/services/${serviceId}/chat`,
+  USER_ASSISTANTS: `${API_BASE_URL}/api/user/assistants`,
+  USER_PROJECTS: `${API_BASE_URL}/api/user/projects`,
+  USER_SERVICE_ASSISTANT: (serviceId: string) => `${API_BASE_URL}/api/user/services/${serviceId}/assistant`,
+  
+  // User Instances (Instancias por Usuario)
+  USER_INSTANCES: `${API_BASE_URL}/api/user/instances`,
+  USER_INSTANCE_UPDATE: (instanceId: string) => `${API_BASE_URL}/api/user/instances/${instanceId}`,
+  USER_INSTANCE_DELETE: (instanceId: string) => `${API_BASE_URL}/api/user/instances/${instanceId}`,
+  
+  // User Initial Setup (Configuración Inicial)
+  USER_SETUP_STATUS: `${API_BASE_URL}/api/user/setup/status`,
+  USER_SETUP_VALIDATE_TOKENS: `${API_BASE_URL}/api/user/setup/validate-tokens`,
+  USER_SETUP_COMPLETE: `${API_BASE_URL}/api/user/setup/complete`,
+  
+  // Admin Users Management
+  ADMIN_USERS: `${API_BASE_URL}/api/admin/users`,
+  ADMIN_USER_UPDATE: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}`,
+  ADMIN_USER_DELETE: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}`,
+  ADMIN_USER_PASSWORD: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}/password`,
+  ADMIN_USER_PERMISSIONS: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}/permissions`,
+  
+  // Dashboard
+  DASHBOARD: `${API_BASE_URL}/api/admin/dashboard`,
+  DASHBOARD_STATS: `${API_BASE_URL}/api/dashboard/stats`,
+  DASHBOARD_ACTIVITIES: `${API_BASE_URL}/api/dashboard/activities`,
+  
+      // Asistentes
+      ASSISTANTS: `${API_BASE_URL}/api/admin/assistants`,
+      
+      // Proyectos
+      PROJECTS: `${API_BASE_URL}/api/admin/projects`,
+      PROJECTS_SET_ACTIVE: `${API_BASE_URL}/api/admin/projects/set-active`,
+      
+      // Servicios
+      SERVICES: `${API_BASE_URL}/api/admin/services`,
+      SERVICE_UPDATE: (serviceId: string) => `${API_BASE_URL}/api/admin/services/${serviceId}`,
+      SERVICE_TOGGLE: (serviceId: string) => `${API_BASE_URL}/api/admin/services/${serviceId}/toggle`,
+      
+      // Tickets
+      TICKETS_DISABLED: `${API_BASE_URL}/api/admin/tickets/disabled`,
+      TICKET_DISABLE: (issueKey: string) => `${API_BASE_URL}/api/admin/tickets/${issueKey}/disable`,
+      TICKET_ENABLE: (issueKey: string) => `${API_BASE_URL}/api/admin/tickets/${issueKey}/enable`,
+      TICKET_STATUS: (issueKey: string) => `${API_BASE_URL}/api/admin/tickets/${issueKey}/status`,
+      
+      // Webhooks
+      WEBHOOK_CONFIGURE: `${API_BASE_URL}/api/admin/webhook/configure`,
+      WEBHOOK_TEST: `${API_BASE_URL}/api/admin/webhook/test`,
+      WEBHOOK_DISABLE: `${API_BASE_URL}/api/admin/webhook/disable`,
+      WEBHOOK_STATUS: `${API_BASE_URL}/api/admin/webhook/status`,
+      WEBHOOK_FILTER: `${API_BASE_URL}/api/admin/webhook/filter`,
+      WEBHOOKS_SAVED: `${API_BASE_URL}/api/admin/webhooks/saved`,
+      WEBHOOKS_SAVE: `${API_BASE_URL}/api/admin/webhooks/save`,
+      WEBHOOKS_DELETE: (id: string) => `${API_BASE_URL}/api/admin/webhooks/${id}`,
+      
+      // Reportes
+      REPORTS: `${API_BASE_URL}/api/reports`,
+      
+      // Configuración
+      SETTINGS: `${API_BASE_URL}/api/settings`,
+} as const;
+
+export default API_BASE_URL;
