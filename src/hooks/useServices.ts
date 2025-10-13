@@ -11,9 +11,9 @@ interface ServiceConfiguration {
   lastUpdated: string;
 }
 
-interface ServicesData {
-  serviceConfigurations: ServiceConfiguration[];
-}
+// interface ServicesData {
+//   serviceConfigurations: ServiceConfiguration[];
+// }
 
 interface UseServicesReturn {
   services: ServiceConfiguration[];
@@ -28,7 +28,7 @@ export const useServices = (): UseServicesReturn => {
   const [services, setServices] = useState<ServiceConfiguration[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { get, put, patch } = useApi();
+  const { get, put } = useApi();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const fetchServices = useCallback(async () => {
@@ -54,7 +54,7 @@ export const useServices = (): UseServicesReturn => {
         setServices(services || []);
         
         console.log('✅ User services loaded:', {
-          count: services?.length || 0
+          count: Array.isArray(services) ? services.length : 0
         });
       } else {
         console.error('❌ User services response failed:', response);
@@ -126,7 +126,7 @@ export const useServices = (): UseServicesReturn => {
       setError(null);
       
       console.log('🔄 Toggling user service:', { serviceId, isActive });
-      const response = await patch(API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId), {
+      const response = await put(API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId), {
         isActive
       });
       
@@ -150,7 +150,7 @@ export const useServices = (): UseServicesReturn => {
       setError('Error de conexión al cambiar el estado del servicio');
       return false;
     }
-  }, [patch]);
+  }, [put]);
 
   useEffect(() => {
     // Solo hacer fetch si la autenticación ya se cargó y el usuario está autenticado

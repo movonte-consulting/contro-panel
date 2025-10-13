@@ -3,11 +3,11 @@ import { useAuth } from './useAuth';
 import { useApi } from './useApi';
 import { API_ENDPOINTS } from '../config/api';
 
-interface ChatKitSession {
-  client_secret: string;
-  session_id: string;
-  expires_at: string;
-}
+// interface ChatKitSession {
+//   client_secret: string;
+//   session_id: string;
+//   expires_at: string;
+// }
 
 interface UseChatKitReturn {
   createSession: () => Promise<string>;

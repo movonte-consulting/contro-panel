@@ -5,7 +5,7 @@ import { Bot, FolderOpen, Settings, Loader2 } from 'lucide-react';
 
 export const UserServicesPage: React.FC = () => {
   const { 
-    dashboardData, 
+    // dashboardData, 
     isLoading, 
     totalAssistants, 
     totalProjects, 

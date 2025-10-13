@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Key, Globe, Bot, CheckCircle, XCircle, Loader2, AlertCircle, Info } from 'lucide-react';
+import { Eye, EyeOff, Key, Globe, Bot, CheckCircle, XCircle, Loader2, Info } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useInitialSetup } from '../hooks/useInitialSetup';
 import '../config/debug';
@@ -11,17 +11,17 @@ interface SetupFormData {
   openaiToken: string;
 }
 
-interface ValidationResult {
-  jiraToken: {
-    isValid: boolean;
-    message: string;
-  };
-  openaiToken: {
-    isValid: boolean;
-    message: string;
-  };
-  allTokensValid: boolean;
-}
+// interface ValidationResult {
+//   jiraToken: {
+//     isValid: boolean;
+//     message: string;
+//   };
+//   openaiToken: {
+//     isValid: boolean;
+//     message: string;
+//   };
+//   allTokensValid: boolean;
+// }
 
 const InitialSetup: React.FC = () => {
   const navigate = useNavigate();

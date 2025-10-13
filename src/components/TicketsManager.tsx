@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Ticket, CheckCircle, XCircle, AlertCircle, Search, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Ticket, CheckCircle, AlertCircle, Search } from 'lucide-react';
 import { useTickets } from '../hooks/useTickets';
 
 const TicketsManager: React.FC = () => {

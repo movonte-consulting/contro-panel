@@ -42,11 +42,11 @@ const ChatKitTestPage: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
-  const [currentTicket, setCurrentTicket] = useState('DEV-1');
+  const [currentTicket] = useState('DEV-1');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [messageCounter, setMessageCounter] = useState(0);
-  const [resultCounter, setResultCounter] = useState(0);
+  const [messageCounter] = useState(0);
+  const [resultCounter] = useState(0);
 
   // Configuración de prueba
   const [testConfig, setTestConfig] = useState({
@@ -103,7 +103,7 @@ const ChatKitTestPage: React.FC = () => {
       }, { requireAuth: true });
 
       if (response.success) {
-        setSessionId(response.sessionId);
+        setSessionId(response.data?.sessionId || null);
         setIsConnected(true);
         addTestResult({
           success: true,
@@ -241,7 +241,7 @@ const ChatKitTestPage: React.FC = () => {
       if (response.success) {
         addTestResult({
           success: true,
-          message: `✅ Estado de sesión: ${response.hasActiveSession ? 'Activa' : 'Inactiva'}`,
+          message: `✅ Estado de sesión: ${response.data?.hasActiveSession ? 'Activa' : 'Inactiva'}`,
           data: response
         });
       } else {

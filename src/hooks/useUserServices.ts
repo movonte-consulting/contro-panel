@@ -245,10 +245,10 @@ export const useUserServices = () => {
       if (response.success) {
         console.log('✅ Chat response received:', response);
         return {
-          response: response.response,
-          threadId: response.threadId,
-          assistantId: response.assistantId,
-          assistantName: response.assistantName
+          response: response.data?.response || '',
+          threadId: response.data?.threadId || '',
+          assistantId: response.data?.assistantId || '',
+          assistantName: response.data?.assistantName || ''
         };
       } else {
         throw new Error(response.error || 'Failed to chat with service');

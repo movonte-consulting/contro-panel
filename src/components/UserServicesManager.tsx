@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Bot, 
   Plus, 
-  Edit, 
+  // Edit, 
   Trash2, 
   MessageSquare, 
   Power, 
@@ -12,9 +12,9 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
-  Settings
+  // Settings
 } from 'lucide-react';
-import { useUserServices, type CreateServiceData, type UpdateServiceData } from '../hooks/useUserServices';
+import { useUserServices, type CreateServiceData } from '../hooks/useUserServices';
 
 interface CreateServiceModalProps {
   isOpen: boolean;

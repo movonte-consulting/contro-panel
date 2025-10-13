@@ -11,14 +11,14 @@ interface Assistant {
   isGlobalActive?: boolean;
 }
 
-interface DashboardData {
-  assistants: Assistant[];
-  projects: any[];
-  serviceConfigurations: any[];
-  activeProject: string;
-  activeAssistant: string;
-  totalAssistants: number;
-}
+// interface DashboardData {
+//   assistants: Assistant[];
+//   projects: any[];
+//   serviceConfigurations: any[];
+//   activeProject: string;
+//   activeAssistant: string;
+//   totalAssistants: number;
+// }
 
 interface UseAssistantsReturn {
   assistants: Assistant[];
@@ -59,10 +59,10 @@ export const useAssistants = (): UseAssistantsReturn => {
         console.log('📊 User assistants data received:', assistants);
         
         setAssistants(assistants || []);
-        setTotalAssistants(assistants?.length || 0);
+        setTotalAssistants(Array.isArray(assistants) ? assistants.length : 0);
         
         console.log('✅ User assistants loaded:', {
-          count: assistants?.length || 0
+          count: Array.isArray(assistants) ? assistants.length : 0
         });
       } else {
         console.error('❌ User assistants response failed:', response);

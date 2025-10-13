@@ -10,12 +10,12 @@ interface Project {
   projectTypeKey: string;
 }
 
-interface ProjectsResponse {
-  success: boolean;
-  count: number;
-  projects: Project[];
-  timestamp: string;
-}
+// interface ProjectsResponse {
+//   success: boolean;
+//   count: number;
+//   projects: Project[];
+//   timestamp: string;
+// }
 
 interface UseProjectsReturn {
   projects: Project[];
@@ -57,8 +57,8 @@ export const useProjects = (): UseProjectsReturn => {
         setProjects(projects || []);
         
         console.log('✅ User projects loaded:', {
-          count: projects?.length || 0,
-          projects: projects?.map(p => ({ key: p.key, name: p.name }))
+          count: Array.isArray(projects) ? projects.length : 0,
+          projects: Array.isArray(projects) ? projects.map((p: Project) => ({ key: p.key, name: p.name })) : []
         });
       } else {
         console.error('❌ User projects response failed:', response);

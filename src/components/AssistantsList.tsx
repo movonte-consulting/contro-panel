@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, Activity, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Bot, Activity, CheckCircle, XCircle } from 'lucide-react';
 import { useAssistants } from '../hooks/useAssistants';
 
 const AssistantsList: React.FC = () => {

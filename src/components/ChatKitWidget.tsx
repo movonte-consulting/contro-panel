@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ChatKit, useChatKit as useOpenAIChatKit } from '@openai/chatkit-react';
 import { useAuth } from '../hooks/useAuth';
 import { useChatKit } from '../hooks/useChatKit';
-import { MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageCircle, X, Minimize2 } from 'lucide-react';
 
 interface ChatKitWidgetProps {
   className?: string;

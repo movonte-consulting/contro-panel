@@ -7,7 +7,7 @@ import {
   Key, 
   Shield, 
   Loader2,
-  CheckCircle,
+  // CheckCircle,
   XCircle,
   AlertCircle
 } from 'lucide-react';
