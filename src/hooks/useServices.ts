@@ -51,10 +51,12 @@ export const useServices = (): UseServicesReturn => {
         const services = response.data;
         console.log('📊 User services data received:', services);
         
-        setServices(services || []);
+        // Si services es un objeto con propiedad data, extraer el array
+        const servicesArray = Array.isArray(services) ? services : (services as any)?.data || [];
+        setServices(servicesArray);
         
         console.log('✅ User services loaded:', {
-          count: Array.isArray(services) ? services.length : 0
+          count: servicesArray.length
         });
       } else {
         console.error('❌ User services response failed:', response);

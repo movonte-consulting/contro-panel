@@ -45,8 +45,8 @@ const ChatKitTestPage: React.FC = () => {
   const [currentTicket] = useState('DEV-1');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [messageCounter] = useState(0);
-  const [resultCounter] = useState(0);
+  // const [messageCounter] = useState(0);
+  // const [resultCounter] = useState(0);
 
   // Configuración de prueba
   const [testConfig, setTestConfig] = useState({

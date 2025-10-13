@@ -54,11 +54,13 @@ export const useProjects = (): UseProjectsReturn => {
         const projects = response.data;
         console.log('📊 User projects data received:', projects);
         
-        setProjects(projects || []);
+        // Si projects es un objeto con propiedad data, extraer el array
+        const projectsArray = Array.isArray(projects) ? projects : (projects as any)?.data || [];
+        setProjects(projectsArray);
         
         console.log('✅ User projects loaded:', {
-          count: Array.isArray(projects) ? projects.length : 0,
-          projects: Array.isArray(projects) ? projects.map((p: Project) => ({ key: p.key, name: p.name })) : []
+          count: projectsArray.length,
+          projects: projectsArray.map((p: Project) => ({ key: p.key, name: p.name }))
         });
       } else {
         console.error('❌ User projects response failed:', response);

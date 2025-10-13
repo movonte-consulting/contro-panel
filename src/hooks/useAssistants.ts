@@ -58,11 +58,13 @@ export const useAssistants = (): UseAssistantsReturn => {
         const assistants = response.data;
         console.log('📊 User assistants data received:', assistants);
         
-        setAssistants(assistants || []);
-        setTotalAssistants(Array.isArray(assistants) ? assistants.length : 0);
+        // Si assistants es un objeto con propiedad data, extraer el array
+        const assistantsArray = Array.isArray(assistants) ? assistants : (assistants as any)?.data || [];
+        setAssistants(assistantsArray);
+        setTotalAssistants(assistantsArray.length);
         
         console.log('✅ User assistants loaded:', {
-          count: Array.isArray(assistants) ? assistants.length : 0
+          count: assistantsArray.length
         });
       } else {
         console.error('❌ User assistants response failed:', response);
