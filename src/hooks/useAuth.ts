@@ -16,7 +16,7 @@ interface UserData {
   role: string;
   permissions?: UserPermissions;
   lastLogin: string;
-  isInitialSetupComplete?: boolean;
+  isInitialSetupComplete: boolean;
 }
 
 interface AuthState {
@@ -51,14 +51,7 @@ export const useAuth = () => {
       } catch (error) {
         console.error('Error parsing user data:', error);
         // Si hay error al parsear, limpiar datos corruptos
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        setAuthState({
-          isAuthenticated: false,
-          user: null,
-          token: null,
-          isLoading: false
-        });
+        logout();
       }
     } else {
       setAuthState(prev => ({ ...prev, isLoading: false }));
@@ -75,6 +68,8 @@ export const useAuth = () => {
       token,
       isLoading: false
     });
+    
+    console.log('✅ Login successful, user authenticated:', user.username);
   }, []);
 
   const logout = useCallback(() => {

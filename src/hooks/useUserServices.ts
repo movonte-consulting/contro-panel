@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApi } from './useApi';
+import { useAuth } from './useAuth';
 import { API_ENDPOINTS } from '../config/api';
 
 // Interfaces para los servicios de usuario
@@ -58,6 +59,7 @@ export interface ChatResponse {
 
 export const useUserServices = () => {
   const { get, post, put, delete: deleteRequest } = useApi();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [dashboardData, setDashboardData] = useState<UserDashboardData | null>(null);
   const [assistants, setAssistants] = useState<UserAssistant[]>([]);
   const [projects, setProjects] = useState<UserProject[]>([]);
@@ -67,6 +69,12 @@ export const useUserServices = () => {
 
   // Cargar dashboard del usuario
   const loadUserDashboard = useCallback(async () => {
+    // Solo cargar si el usuario está autenticado
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     
@@ -91,7 +99,7 @@ export const useUserServices = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [get]);
+  }, [get, isAuthenticated]);
 
   // Cargar asistentes del usuario
   const loadUserAssistants = useCallback(async () => {
@@ -236,12 +244,11 @@ export const useUserServices = () => {
       
       if (response.success) {
         console.log('✅ Chat response received:', response);
-        const responseData = response.data as any;
         return {
-          response: responseData?.response || '',
-          threadId: responseData?.threadId || '',
-          assistantId: responseData?.assistantId || '',
-          assistantName: responseData?.assistantName || ''
+          response: response.response,
+          threadId: response.threadId,
+          assistantId: response.assistantId,
+          assistantName: response.assistantName
         };
       } else {
         throw new Error(response.error || 'Failed to chat with service');
@@ -274,10 +281,19 @@ export const useUserServices = () => {
     }
   }, [get]);
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales solo cuando la autenticación esté lista
   useEffect(() => {
-    loadUserDashboard();
-  }, [loadUserDashboard]);
+    if (!authLoading && isAuthenticated) {
+      loadUserDashboard();
+    } else if (!authLoading && !isAuthenticated) {
+      // Limpiar datos si no está autenticado
+      setDashboardData(null);
+      setAssistants([]);
+      setProjects([]);
+      setServices([]);
+      setError(null);
+    }
+  }, [authLoading, isAuthenticated, loadUserDashboard]);
 
   return {
     // Estado

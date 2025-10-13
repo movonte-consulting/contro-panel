@@ -46,8 +46,8 @@ const WebhooksManager: React.FC = () => {
   useEffect(() => {
     if (webhookStatus) {
       setWebhookUrl(webhookStatus.webhookUrl || '');
-      setSelectedAssistant((webhookStatus as any).assistantId || '');
-      setFilterEnabled((webhookStatus as any).filter?.filterEnabled || false);
+      setSelectedAssistant(webhookStatus.assistantId || '');
+      setFilterEnabled(webhookStatus.filter?.filterEnabled || false);
     }
   }, [webhookStatus]);
 
@@ -62,7 +62,7 @@ const WebhooksManager: React.FC = () => {
     setErrorMessage('');
 
     try {
-      const success = await configureWebhook(webhookUrl, selectedAssistant || '');
+      const success = await configureWebhook(webhookUrl, selectedAssistant || null);
       if (success) {
         setSuccessMessage('Webhook configuration saved successfully');
         setTimeout(() => setSuccessMessage(''), 3000);

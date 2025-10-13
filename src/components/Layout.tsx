@@ -10,14 +10,14 @@ import {
   X,
   FolderOpen,
   Bot,
-  Server
+  MessageCircle,
+  TestTube
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { useProfile } from '../hooks/useProfile';
 import { API_ENDPOINTS } from '../config/api';
 import { ActivityProvider } from '../contexts/ActivityContext';
-import InitialSetupGuard from './InitialSetupGuard';
 import AuthDebug from './AuthDebug';
 
 interface LayoutProps {
@@ -47,11 +47,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
+    { icon: MessageCircle, label: 'Chat IA', path: '/dashboard/chat' },
+    { icon: TestTube, label: 'ChatKit Test', path: '/dashboard/chatkit-test' },
     { icon: Users, label: 'Users', path: '/dashboard/users' },
     { icon: FolderOpen, label: 'Projects', path: '/dashboard/projects' },
     { icon: FileText, label: 'Management', path: '/dashboard/management' },
     { icon: Bot, label: 'My Services', path: '/dashboard/my-services' },
-    { icon: Server, label: 'My Instances', path: '/dashboard/my-instances' },
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
   ];
 
@@ -171,9 +172,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             {/* Page content */}
             <main className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-y-auto">
-              <InitialSetupGuard>
-                {children}
-              </InitialSetupGuard>
+              {children}
             </main>
           </div>
           

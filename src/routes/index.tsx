@@ -1,15 +1,17 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Login from '../components/Login';
+import InitialSetup from '../components/InitialSetup';
 import Dashboard from '../components/Dashboard';
 import ProjectsPage from '../components/ProjectsPage';
 import UsersPage from '../components/UsersPage';
 import ManagementPage from '../components/ManagementPage';
 import SettingsPage from '../components/SettingsPage';
 import UserServicesPage from '../components/UserServicesPage';
-import UserInstancesPage from '../components/UserInstancesPage';
-import InitialSetupPage from '../components/InitialSetupPage';
+import ChatPage from '../components/ChatPage';
+import ChatKitTestPage from '../components/ChatKitTestPage';
 import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // 404 Page Component
 const NotFound = () => (
@@ -36,6 +38,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/setup',
+    element: <InitialSetup />,
   },
   {
     path: '/dashboard',
@@ -98,20 +104,24 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/dashboard/my-instances',
+    path: '/dashboard/chat',
     element: (
       <ProtectedRoute>
-        <Layout>
-          <UserInstancesPage />
-        </Layout>
+        <ErrorBoundary>
+          <ChatPage />
+        </ErrorBoundary>
       </ProtectedRoute>
     ),
   },
   {
-    path: '/initial-setup',
+    path: '/dashboard/chatkit-test',
     element: (
       <ProtectedRoute>
-        <InitialSetupPage />
+        <Layout>
+          <ErrorBoundary>
+            <ChatKitTestPage />
+          </ErrorBoundary>
+        </Layout>
       </ProtectedRoute>
     ),
   },

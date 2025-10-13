@@ -27,12 +27,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Redirigir si ya está autenticado
+  // Redirigir si ya está autenticado (solo al cargar el componente)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, isLoading]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -61,6 +61,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }, { requireAuth: false });
 
       if (response.success) {
+        console.log('✅ Login response successful, redirecting to dashboard...');
+        
         // Usar el hook de autenticación para guardar datos
         login(response.data.token, response.data.user);
         
@@ -71,14 +73,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           onLogin(formData);
         }
         
-        // Redirigir según el estado de configuración inicial
+        // Pequeño delay para asegurar que el estado se actualice
         setTimeout(() => {
-          if (response.data.user.role === 'admin' || response.data.user.isInitialSetupComplete) {
-            navigate('/dashboard');
-          } else {
-            navigate('/initial-setup');
-          }
-        }, 1500);
+          navigate('/dashboard', { replace: true });
+        }, 100);
       } else {
         setErrorMessage(response.error || 'Error en el login');
       }

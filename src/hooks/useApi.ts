@@ -13,7 +13,7 @@ interface RequestOptions extends RequestInit {
 }
 
 export const useApi = () => {
-  const { token, logout, isLoading } = useAuth();
+  const { token, logout } = useAuth();
 
   const apiCall = useCallback(async <T = any>(
     endpoint: string,
@@ -22,20 +22,12 @@ export const useApi = () => {
     const { requireAuth = true, ...fetchOptions } = options;
 
     // Si requiere autenticación pero no hay token, retornar error
-    if (requireAuth && !token && !isLoading) {
+    if (requireAuth && !token) {
       console.log('❌ No hay token de autenticación, redirigiendo al login');
       logout();
       return {
         success: false,
         error: 'No autenticado. Redirigiendo al login...',
-      };
-    }
-
-    // Si aún está cargando la autenticación, esperar
-    if (requireAuth && isLoading) {
-      return {
-        success: false,
-        error: 'Cargando autenticación...',
       };
     }
 
@@ -93,7 +85,7 @@ export const useApi = () => {
         error: 'Error de conexión. Intenta nuevamente.',
       };
     }
-  }, [token, logout, isLoading]);
+  }, [token, logout]);
 
   // Métodos específicos para diferentes tipos de requests
   const get = useCallback(<T = any>(endpoint: string, options: RequestOptions = {}) =>

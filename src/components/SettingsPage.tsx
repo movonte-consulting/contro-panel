@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Settings, Key, User, Shield, Mail, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { Settings, Key, User, Shield, Mail, Calendar, CheckCircle, XCircle, Cog } from 'lucide-react';
 import ChangePasswordModal from './ChangePasswordModal';
+import TokenConfiguration from './TokenConfiguration';
 import { useProfile } from '../hooks/useProfile';
 import { useAuth } from '../hooks/useAuth';
 
 const SettingsPage: React.FC = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTokenConfiguration, setShowTokenConfiguration] = useState(false);
   const { profile } = useProfile();
   const { user } = useAuth();
 
@@ -154,6 +156,22 @@ const SettingsPage: React.FC = () => {
                 Change Password
               </button>
             </div>
+            
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <Cog className="w-5 h-5 text-gray-600" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">API Tokens</h3>
+                  <p className="text-sm text-gray-500">Configure your Jira and OpenAI tokens</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTokenConfiguration(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Configure Tokens
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -166,6 +184,33 @@ const SettingsPage: React.FC = () => {
           console.log('Password changed successfully');
         }}
       />
+
+      {/* Token Configuration Modal */}
+      {showTokenConfiguration && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Configuración de Tokens</h2>
+                <button
+                  onClick={() => setShowTokenConfiguration(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <TokenConfiguration
+                onSuccess={() => {
+                  setShowTokenConfiguration(false);
+                }}
+                onCancel={() => setShowTokenConfiguration(false)}
+                showCancelButton={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

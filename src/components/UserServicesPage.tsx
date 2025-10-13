@@ -1,19 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { UserServicesManager } from './UserServicesManager';
 import { useUserServices } from '../hooks/useUserServices';
-import { useUserInstances } from '../hooks/useUserInstances';
-import { Bot, FolderOpen, Settings, Loader2, Server, ArrowRight } from 'lucide-react';
+import { Bot, FolderOpen, Settings, Loader2 } from 'lucide-react';
 
 export const UserServicesPage: React.FC = () => {
   const { 
+    dashboardData, 
     isLoading, 
     totalAssistants, 
     totalProjects, 
     totalServices 
   } = useUserServices();
-  
-  const { instances, isLoading: instancesLoading } = useUserInstances();
 
   if (isLoading) {
     return (
@@ -43,7 +40,7 @@ export const UserServicesPage: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="bg-blue-100 p-3 rounded-lg mr-4">
@@ -79,20 +76,6 @@ export const UserServicesPage: React.FC = () => {
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="bg-orange-100 p-3 rounded-lg mr-4">
-                <Server className="w-6 h-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">My Instances</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {instancesLoading ? '...' : instances.length}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Info Section */}
@@ -114,37 +97,6 @@ export const UserServicesPage: React.FC = () => {
                 <li>• Test your services with real-time chat functionality</li>
               </ul>
             </div>
-          </div>
-        </div>
-
-        {/* Instances Section */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6 mb-8">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start">
-              <div className="bg-orange-100 p-2 rounded-lg mr-4">
-                <Server className="w-5 h-5 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-orange-900 mb-2">Organize with Instances</h3>
-                <p className="text-orange-800 mb-3">
-                  Create and manage instances to organize your configurations and services. 
-                  Instances help you separate different environments or use cases.
-                </p>
-                <ul className="text-orange-800 space-y-1">
-                  <li>• Organize configurations by environment (dev, staging, prod)</li>
-                  <li>• Separate different use cases or projects</li>
-                  <li>• Activate/deactivate instances as needed</li>
-                  <li>• Custom settings per instance</li>
-                </ul>
-              </div>
-            </div>
-            <Link
-              to="/dashboard/my-instances"
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center space-x-2 ml-4"
-            >
-              <span>Manage Instances</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
 

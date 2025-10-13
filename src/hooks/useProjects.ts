@@ -45,32 +45,30 @@ export const useProjects = (): UseProjectsReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Loading projects...');
-      const response = await get<ProjectsResponse>(API_ENDPOINTS.PROJECTS);
+      console.log('🔄 Loading user projects...');
+      const response = await get<{ data: Project[] }>(API_ENDPOINTS.USER_PROJECTS);
       
-      console.log('📊 Projects response received:', response);
+      console.log('📊 User projects response received:', response);
       
-      if (response.success) {
-        // La respuesta tiene la estructura: { success: true, count: 10, projects: [...], timestamp: "..." }
-        const projectsData = response.data || response;
-        console.log('📊 Projects data received:', projectsData);
+      if (response.success && response.data) {
+        const projects = response.data;
+        console.log('📊 User projects data received:', projects);
         
-        const projects = (projectsData as any).projects || [];
-        setProjects(projects);
+        setProjects(projects || []);
         
-        console.log('✅ Projects loaded:', {
-          count: projects.length,
-          projects: projects.map((p: any) => ({ key: p.key, name: p.name }))
+        console.log('✅ User projects loaded:', {
+          count: projects?.length || 0,
+          projects: projects?.map(p => ({ key: p.key, name: p.name }))
         });
       } else {
-        console.error('❌ Projects response failed:', response);
-        setError(response.error || 'Error al obtener los proyectos');
+        console.error('❌ User projects response failed:', response);
+        setError(response.error || 'Error al obtener los proyectos del usuario');
         setProjects([]);
         setActiveProjectState(null);
       }
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      setError('Error de conexión al obtener los proyectos');
+      console.error('Error fetching user projects:', err);
+      setError('Error de conexión al obtener los proyectos del usuario');
       setProjects([]);
       setActiveProjectState(null);
     } finally {
@@ -82,7 +80,7 @@ export const useProjects = (): UseProjectsReturn => {
     if (!isAuthenticated) return;
 
     try {
-      console.log('🔄 Loading active project from dashboard...');
+      console.log('🔄 Loading active project from user dashboard...');
       const response = await get<{ 
         assistants: any[]; 
         projects: any[]; 
@@ -90,14 +88,14 @@ export const useProjects = (): UseProjectsReturn => {
         activeProject: string; 
         activeAssistant: string; 
         totalAssistants: number; 
-      }>(API_ENDPOINTS.DASHBOARD);
+      }>(API_ENDPOINTS.USER_DASHBOARD);
       
       if (response.success && response.data) {
         setActiveProjectState(response.data.activeProject || null);
-        console.log('✅ Active project loaded:', response.data.activeProject);
+        console.log('✅ Active project loaded from user dashboard:', response.data.activeProject);
       }
     } catch (err) {
-      console.error('Error fetching active project:', err);
+      console.error('Error fetching active project from user dashboard:', err);
     }
   }, [isAuthenticated]);
 
@@ -110,9 +108,9 @@ export const useProjects = (): UseProjectsReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Setting active project:', projectKey);
-      const response = await post(API_ENDPOINTS.PROJECTS_SET_ACTIVE, {
-        projectKey
+      console.log('🔄 Setting active project for user:', projectKey);
+      const response = await post(API_ENDPOINTS.USER_DASHBOARD, {
+        activeProject: projectKey
       });
       
       console.log('📊 Set active project response:', response);

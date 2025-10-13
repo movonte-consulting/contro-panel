@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { useActivityContext } from '../contexts/ActivityContext';
 import AssistantsList from './AssistantsList';
 import RecentActivity from './RecentActivity';
 import { UserServicesManager } from './UserServicesManager';
+import ChatKitWidget from './ChatKitWidget';
+import { MessageCircle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { profile } = useProfile();
   const { activities } = useActivityContext();
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
+  const [showChat, setShowChat] = useState(true);
 
   return (
     <div className="space-y-8">
@@ -34,9 +38,19 @@ const Dashboard: React.FC = () => {
           <AssistantsList />
         </div>
         
-        {/* Right Column - Recent Activities (1/3 width on large screens) */}
-        <div className="xl:col-span-1">
+        {/* Right Column - Recent Activities and Chat (1/3 width on large screens) */}
+        <div className="xl:col-span-1 space-y-6">
           <RecentActivity activities={activities} />
+          
+          {/* ChatKit Widget */}
+          {showChat && (
+            <ChatKitWidget
+              isMinimized={isChatMinimized}
+              onToggleMinimize={() => setIsChatMinimized(!isChatMinimized)}
+              onClose={() => setShowChat(false)}
+              className="w-full"
+            />
+          )}
         </div>
       </div>
 
@@ -72,6 +86,19 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Chat Button */}
+      {!showChat && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <button
+            onClick={() => setShowChat(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2"
+          >
+            <MessageCircle className="w-6 h-6" />
+            <span className="hidden sm:block font-medium">Chat IA</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

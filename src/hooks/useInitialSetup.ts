@@ -1,15 +1,15 @@
 import { useState, useCallback } from 'react';
 import { useApi } from './useApi';
+import { useAuth } from './useAuth';
 import { API_ENDPOINTS } from '../config/api';
 
-// Interfaces para la configuración inicial
-export interface InitialSetupData {
-  jiraToken: string;
+interface SetupFormData {
   jiraUrl: string;
+  jiraToken: string;
   openaiToken: string;
 }
 
-export interface TokenValidationResult {
+interface ValidationResult {
   jiraToken: {
     isValid: boolean;
     message: string;
@@ -18,116 +18,116 @@ export interface TokenValidationResult {
     isValid: boolean;
     message: string;
   };
+  allTokensValid: boolean;
 }
 
-export interface InitialSetupStatus {
-  isInitialSetupComplete: boolean;
-  hasTokens: boolean;
-}
-
-export interface UseInitialSetupReturn {
-  setupStatus: InitialSetupStatus | null;
+interface UseInitialSetupReturn {
   isLoading: boolean;
+  isValidating: boolean;
   error: string | null;
-  checkSetupStatus: () => Promise<void>;
-  validateTokens: (data: InitialSetupData) => Promise<{ success: boolean; validation?: TokenValidationResult }>;
-  completeSetup: (data: InitialSetupData) => Promise<boolean>;
+  success: string | null;
+  validationResult: ValidationResult | null;
+  validateTokens: (formData: SetupFormData) => Promise<boolean>;
+  completeSetup: (formData: SetupFormData) => Promise<boolean>;
+  clearMessages: () => void;
 }
 
 export const useInitialSetup = (): UseInitialSetupReturn => {
-  const [setupStatus, setSetupStatus] = useState<InitialSetupStatus | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { post } = useApi();
+  const { updateUser } = useAuth();
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { get, post } = useApi();
+  const [success, setSuccess] = useState<string | null>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
-  const checkSetupStatus = useCallback(async (): Promise<void> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      console.log('🔄 Checking initial setup status...');
-      const response = await get<{ isInitialSetupComplete: boolean }>(API_ENDPOINTS.USER_SETUP_STATUS);
-      
-      if (response.success && response.data) {
-        setSetupStatus({
-          isInitialSetupComplete: response.data.isInitialSetupComplete,
-          hasTokens: response.data.isInitialSetupComplete
-        });
-        console.log('✅ Setup status checked:', response.data);
-      } else {
-        setError(response.error || 'Error al verificar el estado de configuración');
-      }
-    } catch (err) {
-      console.error('Error checking setup status:', err);
-      setError('Error de conexión al verificar el estado de configuración');
-    } finally {
-      setIsLoading(false);
+  const validateTokens = useCallback(async (formData: SetupFormData): Promise<boolean> => {
+    if (!formData.jiraToken || !formData.openaiToken) {
+      setError('Por favor ingresa ambos tokens');
+      return false;
     }
-  }, [get]);
 
-  const validateTokens = useCallback(async (data: InitialSetupData): Promise<{ success: boolean; validation?: TokenValidationResult }> => {
+    setIsValidating(true);
+    setError(null);
+    setValidationResult(null);
+
     try {
-      setError(null);
-      
-      console.log('🔄 Validating tokens...');
-      const response = await post<{ validation: TokenValidationResult; allTokensValid: boolean }>(
-        API_ENDPOINTS.USER_SETUP_VALIDATE_TOKENS, 
-        data
-      );
-      
-      if (response.success && response.data) {
-        console.log('✅ Tokens validation result:', response.data);
-        return {
-          success: response.data.allTokensValid,
-          validation: response.data.validation
-        };
+      console.log('🔍 Validating tokens with URL:', API_ENDPOINTS.USER_SETUP_VALIDATE_TOKENS);
+      const response = await post(API_ENDPOINTS.USER_SETUP_VALIDATE_TOKENS, {
+        jiraToken: formData.jiraToken,
+        openaiToken: formData.openaiToken
+      });
+
+      if (response.success) {
+        setValidationResult(response.data.validation);
+        
+        if (response.data.allTokensValid) {
+          setSuccess('✅ Tokens válidos! Puedes continuar con la configuración');
+          return true;
+        } else {
+          setError('❌ Algunos tokens no son válidos. Por favor verifica e intenta nuevamente');
+          return false;
+        }
       } else {
-        setError(response.error || 'Error al validar los tokens');
-        return { success: false };
+        setError(response.error || 'Error validando tokens');
+        return false;
       }
     } catch (err) {
       console.error('Error validating tokens:', err);
-      setError('Error de conexión al validar los tokens');
-      return { success: false };
+      setError('Error de conexión al validar tokens');
+      return false;
+    } finally {
+      setIsValidating(false);
     }
   }, [post]);
 
-  const completeSetup = useCallback(async (data: InitialSetupData): Promise<boolean> => {
+  const completeSetup = useCallback(async (formData: SetupFormData): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
     try {
-      setError(null);
-      
-      console.log('🔄 Completing initial setup...');
-      const response = await post<{ isInitialSetupComplete: boolean }>(
-        API_ENDPOINTS.USER_SETUP_COMPLETE, 
-        data
-      );
-      
-      if (response.success && response.data) {
-        setSetupStatus({
-          isInitialSetupComplete: true,
-          hasTokens: true
-        });
-        console.log('✅ Initial setup completed successfully');
+      console.log('🔍 Completing setup with URL:', API_ENDPOINTS.USER_SETUP_COMPLETE);
+      const response = await post(API_ENDPOINTS.USER_SETUP_COMPLETE, {
+        jiraUrl: formData.jiraUrl,
+        jiraToken: formData.jiraToken,
+        openaiToken: formData.openaiToken
+      });
+
+      if (response.success) {
+        setSuccess('🎉 Configuración completada exitosamente!');
+        
+        // Actualizar el estado del usuario
+        updateUser({ isInitialSetupComplete: true });
+        
         return true;
       } else {
-        setError(response.error || 'Error al completar la configuración inicial');
+        setError(response.error || 'Error completando la configuración');
         return false;
       }
     } catch (err) {
       console.error('Error completing setup:', err);
-      setError('Error de conexión al completar la configuración inicial');
+      setError('Error de conexión al completar la configuración');
       return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, [post]);
+  }, [post, updateUser]);
+
+  const clearMessages = useCallback(() => {
+    setError(null);
+    setSuccess(null);
+  }, []);
 
   return {
-    setupStatus,
     isLoading,
+    isValidating,
     error,
-    checkSetupStatus,
+    success,
+    validationResult,
     validateTokens,
-    completeSetup
+    completeSetup,
+    clearMessages
   };
 };
-
-

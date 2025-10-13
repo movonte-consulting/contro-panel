@@ -28,7 +28,7 @@ export const useServices = (): UseServicesReturn => {
   const [services, setServices] = useState<ServiceConfiguration[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { get, put } = useApi();
+  const { get, put, patch } = useApi();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const fetchServices = useCallback(async () => {
@@ -42,28 +42,28 @@ export const useServices = (): UseServicesReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Loading services from dashboard...');
-      const response = await get<ServicesData>(API_ENDPOINTS.DASHBOARD);
+      console.log('🔄 Loading user services...');
+      const response = await get<{ data: ServiceConfiguration[] }>(API_ENDPOINTS.USER_SERVICES_LIST);
       
-      console.log('📊 Services response received:', response);
+      console.log('📊 User services response received:', response);
       
       if (response.success && response.data) {
-        const dashboardData = response.data;
-        console.log('📊 Services data received:', dashboardData);
+        const services = response.data;
+        console.log('📊 User services data received:', services);
         
-        setServices(dashboardData.serviceConfigurations || []);
+        setServices(services || []);
         
-        console.log('✅ Services loaded:', {
-          count: dashboardData.serviceConfigurations?.length || 0
+        console.log('✅ User services loaded:', {
+          count: services?.length || 0
         });
       } else {
-        console.error('❌ Services response failed:', response);
-        setError(response.error || 'Error al obtener los servicios');
+        console.error('❌ User services response failed:', response);
+        setError(response.error || 'Error al obtener los servicios del usuario');
         setServices([]);
       }
     } catch (err) {
-      console.error('Error fetching services:', err);
-      setError('Error de conexión al obtener los servicios');
+      console.error('Error fetching user services:', err);
+      setError('Error de conexión al obtener los servicios del usuario');
       setServices([]);
     } finally {
       setIsLoading(false);
@@ -83,8 +83,8 @@ export const useServices = (): UseServicesReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Updating service:', { serviceId, assistantId, assistantName });
-      const response = await put(API_ENDPOINTS.SERVICE_UPDATE(serviceId), {
+      console.log('🔄 Updating user service:', { serviceId, assistantId, assistantName });
+      const response = await put(API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId), {
         assistantId,
         assistantName,
         isActive: true
@@ -125,8 +125,8 @@ export const useServices = (): UseServicesReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Toggling service:', { serviceId, isActive });
-      const response = await put(API_ENDPOINTS.SERVICE_TOGGLE(serviceId), {
+      console.log('🔄 Toggling user service:', { serviceId, isActive });
+      const response = await patch(API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId), {
         isActive
       });
       
@@ -150,7 +150,7 @@ export const useServices = (): UseServicesReturn => {
       setError('Error de conexión al cambiar el estado del servicio');
       return false;
     }
-  }, [put]);
+  }, [patch]);
 
   useEffect(() => {
     // Solo hacer fetch si la autenticación ya se cargó y el usuario está autenticado

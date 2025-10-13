@@ -49,34 +49,31 @@ export const useAssistants = (): UseAssistantsReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Loading assistants from dashboard...');
-      const response = await get<DashboardData>(API_ENDPOINTS.DASHBOARD);
+      console.log('🔄 Loading user assistants...');
+      const response = await get<{ data: Assistant[] }>(API_ENDPOINTS.USER_ASSISTANTS);
       
-      console.log('📊 Dashboard response received:', response);
+      console.log('📊 User assistants response received:', response);
       
       if (response.success && response.data) {
-        const dashboardData = response.data;
-        console.log('📊 Dashboard data received:', dashboardData);
+        const assistants = response.data;
+        console.log('📊 User assistants data received:', assistants);
         
-        setAssistants(dashboardData.assistants || []);
-        setActiveAssistant(dashboardData.activeAssistant || '');
-        setTotalAssistants(dashboardData.totalAssistants || 0);
+        setAssistants(assistants || []);
+        setTotalAssistants(assistants?.length || 0);
         
-        console.log('✅ Assistants loaded:', {
-          count: dashboardData.assistants?.length || 0,
-          active: dashboardData.activeAssistant,
-          total: dashboardData.totalAssistants
+        console.log('✅ User assistants loaded:', {
+          count: assistants?.length || 0
         });
       } else {
-        console.error('❌ Dashboard response failed:', response);
-        setError(response.error || 'Error al obtener los asistentes');
+        console.error('❌ User assistants response failed:', response);
+        setError(response.error || 'Error al obtener los asistentes del usuario');
         setAssistants([]);
         setActiveAssistant('');
         setTotalAssistants(0);
       }
     } catch (err) {
-      console.error('Error fetching assistants:', err);
-      setError('Error de conexión al obtener los asistentes');
+      console.error('Error fetching user assistants:', err);
+      setError('Error de conexión al obtener los asistentes del usuario');
     } finally {
       setIsLoading(false);
     }
