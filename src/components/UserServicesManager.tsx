@@ -15,6 +15,7 @@ import {
   // Settings
 } from 'lucide-react';
 import { useUserServices, type CreateServiceData } from '../hooks/useUserServices';
+import ServiceEndpointsModal from './ServiceEndpointsModal';
 
 interface CreateServiceModalProps {
   isOpen: boolean;
@@ -276,7 +277,14 @@ export const UserServicesManager: React.FC = () => {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showEndpointsModal, setShowEndpointsModal] = useState(false);
   const [selectedService, setSelectedService] = useState<{ id: string; name: string } | null>(null);
+  const [createdService, setCreatedService] = useState<{
+    serviceId: string;
+    serviceName: string;
+    assistantId: string;
+    assistantName: string;
+  } | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -286,6 +294,15 @@ export const UserServicesManager: React.FC = () => {
       if (result) {
         setSuccessMessage(`Service '${data.serviceName}' created successfully`);
         setTimeout(() => setSuccessMessage(null), 3000);
+        
+        // Guardar la información del servicio creado y mostrar el modal de endpoints
+        setCreatedService({
+          serviceId: data.serviceId,
+          serviceName: data.serviceName,
+          assistantId: data.assistantId,
+          assistantName: data.assistantName
+        });
+        setShowEndpointsModal(true);
       }
     } catch (error) {
       setErrorMessage('Failed to create service');
@@ -486,6 +503,17 @@ export const UserServicesManager: React.FC = () => {
         serviceName={selectedService?.name || ''}
         onChat={handleChat}
       />
+
+      {createdService && (
+        <ServiceEndpointsModal
+          isOpen={showEndpointsModal}
+          onClose={() => {
+            setShowEndpointsModal(false);
+            setCreatedService(null);
+          }}
+          service={createdService}
+        />
+      )}
     </div>
   );
 };
