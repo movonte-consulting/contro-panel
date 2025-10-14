@@ -27,7 +27,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Si está autenticado pero no ha completado la configuración inicial, redirigir al setup
-  if (user && !user.isInitialSetupComplete) {
+  // Solo para usuarios regulares, no para admins
+  if (user && !user.isInitialSetupComplete && user.role !== 'admin') {
     return <Navigate to="/setup" replace />;
   }
 
