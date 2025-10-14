@@ -11,3 +11,4 @@ export const debugConfig = () => {
 
 // Exportar para uso en consola del navegador
 (window as any).debugConfig = debugConfig;
+
