@@ -29,6 +29,22 @@ export const API_ENDPOINTS = {
   USER_SETUP_COMPLETE: `${API_BASE_URL}/api/user/setup/complete`,
   USER_SETUP_VALIDATE_TOKENS: `${API_BASE_URL}/api/user/setup/validate-tokens`,
   
+  // User Tickets (Tickets Personalizados por Usuario)
+  USER_TICKETS_DISABLED: `${API_BASE_URL}/api/user/tickets/disabled`,
+  USER_TICKET_DISABLE: (issueKey: string) => `${API_BASE_URL}/api/user/tickets/${issueKey}/disable`,
+  USER_TICKET_ENABLE: (issueKey: string) => `${API_BASE_URL}/api/user/tickets/${issueKey}/enable`,
+  USER_TICKET_STATUS: (issueKey: string) => `${API_BASE_URL}/api/user/tickets/${issueKey}/status`,
+  
+  // User Webhooks (Webhooks Personalizados por Usuario)
+  USER_WEBHOOK_CONFIGURE: `${API_BASE_URL}/api/user/webhook/configure`,
+  USER_WEBHOOK_TEST: `${API_BASE_URL}/api/user/webhook/test`,
+  USER_WEBHOOK_DISABLE: `${API_BASE_URL}/api/user/webhook/disable`,
+  USER_WEBHOOK_STATUS: `${API_BASE_URL}/api/user/webhook/status`,
+  USER_WEBHOOK_FILTER: `${API_BASE_URL}/api/user/webhook/filter`,
+  USER_WEBHOOKS_SAVED: `${API_BASE_URL}/api/user/webhooks/saved`,
+  USER_WEBHOOKS_SAVE: `${API_BASE_URL}/api/user/webhooks/save`,
+  USER_WEBHOOKS_DELETE: (id: string) => `${API_BASE_URL}/api/user/webhooks/${id}`,
+  
   // Admin Users Management
   ADMIN_USERS: `${API_BASE_URL}/api/admin/users`,
   ADMIN_USER_UPDATE: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}`,

@@ -35,7 +35,7 @@ export const useTickets = (): UseTicketsReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { get, post } = useApi();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const fetchDisabledTickets = useCallback(async () => {
     if (!isAuthenticated) {
@@ -47,8 +47,12 @@ export const useTickets = (): UseTicketsReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Loading disabled tickets...');
-      const response = await get<{ disabledTickets: DisabledTicket[] }>(API_ENDPOINTS.TICKETS_DISABLED);
+      // Usar endpoints diferentes según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.TICKETS_DISABLED : API_ENDPOINTS.USER_TICKETS_DISABLED;
+      
+      console.log('🔄 Loading disabled tickets...', isAdmin ? '(admin)' : '(user)');
+      const response = await get<{ disabledTickets: DisabledTicket[] }>(endpoint);
       
       if (response.success && response.data) {
         setDisabledTickets(response.data.disabledTickets || []);
@@ -64,7 +68,7 @@ export const useTickets = (): UseTicketsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
   const disableTicket = useCallback(async (issueKey: string, reason?: string): Promise<boolean> => {
     if (!issueKey) {
@@ -75,8 +79,12 @@ export const useTickets = (): UseTicketsReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Disabling ticket:', issueKey);
-      const response = await post(API_ENDPOINTS.TICKET_DISABLE(issueKey), {
+      // Usar endpoints diferentes según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.TICKET_DISABLE(issueKey) : API_ENDPOINTS.USER_TICKET_DISABLE(issueKey);
+      
+      console.log('🔄 Disabling ticket:', issueKey, isAdmin ? '(admin)' : '(user)');
+      const response = await post(endpoint, {
         reason: reason || 'Manual disable'
       });
       
@@ -94,7 +102,7 @@ export const useTickets = (): UseTicketsReturn => {
       setError('Error de conexión al deshabilitar el ticket');
       return false;
     }
-  }, [post, fetchDisabledTickets]);
+  }, [post, fetchDisabledTickets, user?.role]);
 
   const enableTicket = useCallback(async (issueKey: string): Promise<boolean> => {
     if (!issueKey) {
@@ -105,8 +113,12 @@ export const useTickets = (): UseTicketsReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Enabling ticket:', issueKey);
-      const response = await post(API_ENDPOINTS.TICKET_ENABLE(issueKey));
+      // Usar endpoints diferentes según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.TICKET_ENABLE(issueKey) : API_ENDPOINTS.USER_TICKET_ENABLE(issueKey);
+      
+      console.log('🔄 Enabling ticket:', issueKey, isAdmin ? '(admin)' : '(user)');
+      const response = await post(endpoint);
       
       if (response.success) {
         console.log('✅ Ticket enabled:', issueKey);
@@ -122,7 +134,7 @@ export const useTickets = (): UseTicketsReturn => {
       setError('Error de conexión al habilitar el ticket');
       return false;
     }
-  }, [post, fetchDisabledTickets]);
+  }, [post, fetchDisabledTickets, user?.role]);
 
   const checkTicketStatus = useCallback(async (issueKey: string): Promise<TicketStatus | null> => {
     if (!issueKey) {
@@ -133,8 +145,12 @@ export const useTickets = (): UseTicketsReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Checking ticket status:', issueKey);
-      const response = await get<{ issueKey: string; isDisabled: boolean; ticketInfo?: any }>(API_ENDPOINTS.TICKET_STATUS(issueKey));
+      // Usar endpoints diferentes según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.TICKET_STATUS(issueKey) : API_ENDPOINTS.USER_TICKET_STATUS(issueKey);
+      
+      console.log('🔄 Checking ticket status:', issueKey, isAdmin ? '(admin)' : '(user)');
+      const response = await get<{ issueKey: string; isDisabled: boolean; ticketInfo?: any }>(endpoint);
       
       if (response.success && response.data) {
         console.log('✅ Ticket status checked:', issueKey, response.data.isDisabled);
@@ -148,7 +164,7 @@ export const useTickets = (): UseTicketsReturn => {
       setError('Error de conexión al verificar el estado del ticket');
       return null;
     }
-  }, [get]);
+  }, [get, user?.role]);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
