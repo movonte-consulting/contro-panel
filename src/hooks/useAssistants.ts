@@ -36,7 +36,7 @@ export const useAssistants = (): UseAssistantsReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { get } = useApi();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const fetchAssistants = useCallback(async () => {
     // Solo hacer la petición si el usuario está autenticado
@@ -49,37 +49,50 @@ export const useAssistants = (): UseAssistantsReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Loading user assistants...');
-      const response = await get<{ data: Assistant[] }>(API_ENDPOINTS.USER_ASSISTANTS);
+      // Determinar qué endpoint usar según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.DASHBOARD : API_ENDPOINTS.USER_ASSISTANTS;
       
-      console.log('📊 User assistants response received:', response);
+      console.log(`🔄 Loading ${isAdmin ? 'admin' : 'user'} assistants...`);
+      const response = await get<{ data: Assistant[] }>(endpoint);
+      
+      console.log(`📊 ${isAdmin ? 'Admin' : 'User'} assistants response received:`, response);
       
       if (response.success && response.data) {
         const assistants = response.data;
-        console.log('📊 User assistants data received:', assistants);
+        console.log(`📊 ${isAdmin ? 'Admin' : 'User'} assistants data received:`, assistants);
         
-        // Si assistants es un objeto con propiedad data, extraer el array
-        const assistantsArray = Array.isArray(assistants) ? assistants : (assistants as any)?.data || [];
+        // Para admin, los datos vienen del dashboard con estructura diferente
+        let assistantsArray: Assistant[] = [];
+        if (isAdmin) {
+          // Admin: response.data.assistants
+          assistantsArray = (assistants as any)?.assistants || [];
+        } else {
+          // Usuario: response.data (array directo o con propiedad data)
+          assistantsArray = Array.isArray(assistants) ? assistants : (assistants as any)?.data || [];
+        }
+        
         setAssistants(assistantsArray);
         setTotalAssistants(assistantsArray.length);
         
-        console.log('✅ User assistants loaded:', {
+        console.log(`✅ ${isAdmin ? 'Admin' : 'User'} assistants loaded:`, {
           count: assistantsArray.length
         });
       } else {
-        console.error('❌ User assistants response failed:', response);
-        setError(response.error || 'Error al obtener los asistentes del usuario');
+        console.error(`❌ ${isAdmin ? 'Admin' : 'User'} assistants response failed:`, response);
+        setError(response.error || `Error al obtener los asistentes ${isAdmin ? 'del sistema' : 'del usuario'}`);
         setAssistants([]);
         setActiveAssistant('');
         setTotalAssistants(0);
       }
     } catch (err) {
-      console.error('Error fetching user assistants:', err);
-      setError('Error de conexión al obtener los asistentes del usuario');
+      const isAdmin = user?.role === 'admin';
+      console.error(`Error fetching ${isAdmin ? 'admin' : 'user'} assistants:`, err);
+      setError(`Error de conexión al obtener los asistentes ${isAdmin ? 'del sistema' : 'del usuario'}`);
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
   useEffect(() => {
     // Solo hacer fetch si la autenticación ya se cargó y el usuario está autenticado

@@ -29,7 +29,7 @@ export const useServices = (): UseServicesReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { get, put } = useApi();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const fetchServices = useCallback(async () => {
     // Solo hacer la petición si el usuario está autenticado
@@ -42,35 +42,48 @@ export const useServices = (): UseServicesReturn => {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Loading user services...');
-      const response = await get<{ data: ServiceConfiguration[] }>(API_ENDPOINTS.USER_SERVICES_LIST);
+      // Determinar qué endpoint usar según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.DASHBOARD : API_ENDPOINTS.USER_SERVICES_LIST;
       
-      console.log('📊 User services response received:', response);
+      console.log(`🔄 Loading ${isAdmin ? 'admin' : 'user'} services...`);
+      const response = await get<{ data: ServiceConfiguration[] }>(endpoint);
+      
+      console.log(`📊 ${isAdmin ? 'Admin' : 'User'} services response received:`, response);
       
       if (response.success && response.data) {
         const services = response.data;
-        console.log('📊 User services data received:', services);
+        console.log(`📊 ${isAdmin ? 'Admin' : 'User'} services data received:`, services);
         
-        // Si services es un objeto con propiedad data, extraer el array
-        const servicesArray = Array.isArray(services) ? services : (services as any)?.data || [];
+        // Para admin, los datos vienen del dashboard con estructura diferente
+        let servicesArray: ServiceConfiguration[] = [];
+        if (isAdmin) {
+          // Admin: response.data.serviceConfigurations
+          servicesArray = (services as any)?.serviceConfigurations || [];
+        } else {
+          // Usuario: response.data (array directo o con propiedad data)
+          servicesArray = Array.isArray(services) ? services : (services as any)?.data || [];
+        }
+        
         setServices(servicesArray);
         
-        console.log('✅ User services loaded:', {
+        console.log(`✅ ${isAdmin ? 'Admin' : 'User'} services loaded:`, {
           count: servicesArray.length
         });
       } else {
-        console.error('❌ User services response failed:', response);
-        setError(response.error || 'Error al obtener los servicios del usuario');
+        console.error(`❌ ${isAdmin ? 'Admin' : 'User'} services response failed:`, response);
+        setError(response.error || `Error al obtener los servicios ${isAdmin ? 'del sistema' : 'del usuario'}`);
         setServices([]);
       }
     } catch (err) {
-      console.error('Error fetching user services:', err);
-      setError('Error de conexión al obtener los servicios del usuario');
+      const isAdmin = user?.role === 'admin';
+      console.error(`Error fetching ${isAdmin ? 'admin' : 'user'} services:`, err);
+      setError(`Error de conexión al obtener los servicios ${isAdmin ? 'del sistema' : 'del usuario'}`);
       setServices([]);
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.role]);
 
   const updateService = useCallback(async (
     serviceId: string, 
@@ -85,14 +98,18 @@ export const useServices = (): UseServicesReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Updating user service:', { serviceId, assistantId, assistantName });
-      const response = await put(API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId), {
+      // Determinar qué endpoint usar según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.SERVICE_UPDATE(serviceId) : API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId);
+      
+      console.log(`🔄 Updating ${isAdmin ? 'admin' : 'user'} service:`, { serviceId, assistantId, assistantName });
+      const response = await put(endpoint, {
         assistantId,
         assistantName,
         isActive: true
       });
       
-      console.log('📊 Update service response:', response);
+      console.log(`📊 Update ${isAdmin ? 'admin' : 'user'} service response:`, response);
       
       if (response.success) {
         // Actualizar el servicio en el estado local
@@ -107,18 +124,19 @@ export const useServices = (): UseServicesReturn => {
               }
             : service
         ));
-        console.log('✅ Service updated:', serviceId);
+        console.log(`✅ ${isAdmin ? 'Admin' : 'User'} service updated:`, serviceId);
         return true;
       } else {
-        setError(response.error || 'Error al actualizar el servicio');
+        setError(response.error || `Error al actualizar el servicio ${isAdmin ? 'del sistema' : 'del usuario'}`);
         return false;
       }
     } catch (err) {
-      console.error('Error updating service:', err);
-      setError('Error de conexión al actualizar el servicio');
+      const isAdmin = user?.role === 'admin';
+      console.error(`Error updating ${isAdmin ? 'admin' : 'user'} service:`, err);
+      setError(`Error de conexión al actualizar el servicio ${isAdmin ? 'del sistema' : 'del usuario'}`);
       return false;
     }
-  }, [put]);
+  }, [put, user?.role]);
 
   const toggleService = useCallback(async (
     serviceId: string, 
@@ -127,12 +145,16 @@ export const useServices = (): UseServicesReturn => {
     try {
       setError(null);
       
-      console.log('🔄 Toggling user service:', { serviceId, isActive });
-      const response = await put(API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId), {
+      // Determinar qué endpoint usar según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin ? API_ENDPOINTS.SERVICE_UPDATE(serviceId) : API_ENDPOINTS.USER_SERVICE_UPDATE(serviceId);
+      
+      console.log(`🔄 Toggling ${isAdmin ? 'admin' : 'user'} service:`, { serviceId, isActive });
+      const response = await put(endpoint, {
         isActive
       });
       
-      console.log('📊 Toggle service response:', response);
+      console.log(`📊 Toggle ${isAdmin ? 'admin' : 'user'} service response:`, response);
       
       if (response.success) {
         // Actualizar el servicio en el estado local
@@ -141,18 +163,19 @@ export const useServices = (): UseServicesReturn => {
             ? { ...service, isActive }
             : service
         ));
-        console.log('✅ Service toggled:', serviceId, isActive);
+        console.log(`✅ ${isAdmin ? 'Admin' : 'User'} service toggled:`, serviceId, isActive);
         return true;
       } else {
-        setError(response.error || 'Error al cambiar el estado del servicio');
+        setError(response.error || `Error al cambiar el estado del servicio ${isAdmin ? 'del sistema' : 'del usuario'}`);
         return false;
       }
     } catch (err) {
-      console.error('Error toggling service:', err);
-      setError('Error de conexión al cambiar el estado del servicio');
+      const isAdmin = user?.role === 'admin';
+      console.error(`Error toggling ${isAdmin ? 'admin' : 'user'} service:`, err);
+      setError(`Error de conexión al cambiar el estado del servicio ${isAdmin ? 'del sistema' : 'del usuario'}`);
       return false;
     }
-  }, [put]);
+  }, [put, user?.role]);
 
   useEffect(() => {
     // Solo hacer fetch si la autenticación ya se cargó y el usuario está autenticado
