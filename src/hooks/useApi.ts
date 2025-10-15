@@ -52,11 +52,20 @@ export const useApi = () => {
       // Si la respuesta es 401, el token es inválido o expiró
       if (response.status === 401 && requireAuth) {
         console.log('❌ Token inválido o expirado, redirigiendo al login');
-        logout();
-        return {
-          success: false,
-          error: 'Sesión expirada. Redirigiendo al login...',
-        };
+        // Solo hacer logout si es un endpoint crítico de autenticación
+        if (endpoint.includes('/auth/') || endpoint.includes('/profile')) {
+          logout();
+          return {
+            success: false,
+            error: 'Sesión expirada. Redirigiendo al login...',
+          };
+        } else {
+          // Para otros endpoints, solo devolver el error sin hacer logout
+          return {
+            success: false,
+            error: 'Token inválido o expirado. Por favor, recarga la página.',
+          };
+        }
       }
 
       let data;
