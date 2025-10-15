@@ -15,13 +15,19 @@ import {
   // Settings
 } from 'lucide-react';
 import { useUserServices, type CreateServiceData } from '../hooks/useUserServices';
+import { useServiceValidation } from '../hooks/useServiceValidation';
 import ServiceEndpointsModal from './ServiceEndpointsModal';
 
 interface CreateServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: CreateServiceData) => Promise<void>;
+  onCreate: (data: CreateServiceData, validationInfo?: ServiceValidationData) => Promise<void>;
   assistants: Array<{ id: string; name: string }>;
+}
+
+interface ServiceValidationData {
+  websiteUrl: string;
+  requestedDomain: string;
 }
 
 const CreateServiceModal: React.FC<CreateServiceModalProps> = ({ 
@@ -36,17 +42,21 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
     assistantId: '',
     assistantName: ''
   });
+  const [validationData, setValidationData] = useState<ServiceValidationData>({
+    websiteUrl: '',
+    requestedDomain: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.serviceId || !formData.serviceName || !formData.assistantId) return;
+    if (!validationData.websiteUrl || !validationData.requestedDomain) return;
 
     setIsSubmitting(true);
     try {
-      await onCreate(formData);
-      setFormData({ serviceId: '', serviceName: '', assistantId: '', assistantName: '' });
-      onClose();
+      // Crear el servicio con la información de validación
+      await onCreate(formData, validationData);
     } catch (error) {
       console.error('Error creating service:', error);
     } finally {
@@ -123,6 +133,46 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
             </select>
           </div>
 
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-medium text-gray-900 mb-3">Website Configuration</h3>
+            <p className="text-xs text-gray-600 mb-4">
+              Specify where this service will be used. This information will be sent for admin approval to configure CORS.
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Website URL *
+                </label>
+                <input
+                  type="url"
+                  value={validationData.websiteUrl}
+                  onChange={(e) => setValidationData(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="https://mi-sitio.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Domain for CORS *
+                </label>
+                <input
+                  type="text"
+                  value={validationData.requestedDomain}
+                  onChange={(e) => setValidationData(prev => ({ ...prev, requestedDomain: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="mi-sitio.com"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Only the domain (without https:// or www)
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
@@ -150,6 +200,93 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+};
+
+// Modal de validación de servicio
+const ServiceValidationModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  serviceName: string;
+  validationData: ServiceValidationData;
+}> = ({ isOpen, onClose, serviceName, validationData }) => {
+  const { createValidationRequest, loading } = useServiceValidation();
+
+  const handleSubmit = async () => {
+    try {
+      await createValidationRequest({
+        serviceName,
+        websiteUrl: validationData.websiteUrl,
+        requestedDomain: validationData.requestedDomain
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error creating validation request:', error);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <CheckCircle className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Service Created Successfully!</h3>
+            <p className="text-sm text-gray-600">Now request validation for your website</p>
+          </div>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div className="text-sm text-blue-800">
+            <p className="font-medium mb-1">Service: {serviceName}</p>
+            <p className="text-blue-700">Website: {validationData.websiteUrl}</p>
+            <p className="text-blue-700">Domain: {validationData.requestedDomain}</p>
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-yellow-800">
+              <p className="font-medium mb-1">Validation Required</p>
+              <p>An admin will review your request and configure CORS for your domain. You'll receive a protected token once approved.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4" />
+                Request Validation
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+          >
+            Skip for now
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -278,6 +415,7 @@ export const UserServicesManager: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
   const [showEndpointsModal, setShowEndpointsModal] = useState(false);
+  const [showValidationModal, setShowValidationModal] = useState(false);
   const [selectedService, setSelectedService] = useState<{ id: string; name: string } | null>(null);
   const [createdService, setCreatedService] = useState<{
     serviceId: string;
@@ -285,24 +423,36 @@ export const UserServicesManager: React.FC = () => {
     assistantId: string;
     assistantName: string;
   } | null>(null);
+  const [validationData, setValidationData] = useState<ServiceValidationData>({
+    websiteUrl: '',
+    requestedDomain: ''
+  });
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleCreateService = async (data: CreateServiceData) => {
+  const handleCreateService = async (data: CreateServiceData, validationInfo?: ServiceValidationData) => {
     try {
       const result = await createService(data);
       if (result) {
         setSuccessMessage(`Service '${data.serviceName}' created successfully`);
         setTimeout(() => setSuccessMessage(null), 3000);
         
-        // Guardar la información del servicio creado y mostrar el modal de endpoints
+        // Guardar la información del servicio creado
         setCreatedService({
           serviceId: data.serviceId,
           serviceName: data.serviceName,
           assistantId: data.assistantId,
           assistantName: data.assistantName
         });
-        setShowEndpointsModal(true);
+
+        // Si hay información de validación, mostrar modal de validación
+        if (validationInfo) {
+          setValidationData(validationInfo);
+          setShowValidationModal(true);
+        } else {
+          // Si no hay validación, mostrar modal de endpoints directamente
+          setShowEndpointsModal(true);
+        }
       }
     } catch (error) {
       setErrorMessage('Failed to create service');
@@ -456,6 +606,24 @@ export const UserServicesManager: React.FC = () => {
                   <MessageSquare className="w-4 h-4 mr-1" />
                   Test
                 </button>
+                
+                {/* Botón de Endpoints - Solo visible si el servicio está aprobado */}
+                <button
+                  onClick={() => {
+                    setCreatedService({
+                      serviceId: service.serviceId,
+                      serviceName: service.serviceName,
+                      assistantId: service.assistantId,
+                      assistantName: service.assistantName
+                    });
+                    setShowEndpointsModal(true);
+                  }}
+                  className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 flex items-center"
+                  title="View endpoints and protected token"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                </button>
+                
                 <button
                   onClick={() => handleToggleService(service.serviceId, service.isActive)}
                   className={`px-3 py-2 rounded text-sm flex items-center ${
@@ -514,6 +682,16 @@ export const UserServicesManager: React.FC = () => {
           service={createdService}
         />
       )}
+
+      <ServiceValidationModal
+        isOpen={showValidationModal}
+        onClose={() => {
+          setShowValidationModal(false);
+          setCreatedService(null);
+        }}
+        serviceName={createdService?.serviceName || ''}
+        validationData={validationData}
+      />
     </div>
   );
 };
