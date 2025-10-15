@@ -26,6 +26,10 @@ export interface UserService {
   assistantName: string;
   isActive: boolean;
   lastUpdated: string;
+  configuration?: {
+    adminApproved?: boolean;
+    adminApprovedAt?: string;
+  };
 }
 
 export interface UserDashboardData {

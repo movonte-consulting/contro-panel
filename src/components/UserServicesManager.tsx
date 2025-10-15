@@ -6,7 +6,6 @@ import {
   Trash2, 
   MessageSquare, 
   Power, 
-  PowerOff, 
   Loader2,
   AlertCircle,
   CheckCircle,
@@ -623,7 +622,7 @@ export const UserServicesManager: React.FC = () => {
                   Test
                 </button>
                 
-                {/* Botón de Endpoints - Solo visible si el servicio está aprobado */}
+                {/* Botón de Endpoints - Solo visible si el servicio está activo */}
                 {service.isActive && (
                   <button
                     onClick={() => {
@@ -642,26 +641,28 @@ export const UserServicesManager: React.FC = () => {
                   </button>
                 )}
                 
-                <button
-                  onClick={() => handleToggleService(service.serviceId, service.isActive)}
-                  className={`px-3 py-2 rounded text-sm flex items-center ${
-                    service.isActive
-                      ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'bg-green-600 text-white hover:bg-green-700'
-                  }`}
-                >
-                  {service.isActive ? (
-                    <>
-                      <PowerOff className="w-4 h-4 mr-1" />
-                      Disable
-                    </>
-                  ) : (
-                    <>
-                      <Power className="w-4 h-4 mr-1" />
-                      Enable
-                    </>
-                  )}
-                </button>
+                {/* Botón de Toggle - Solo visible si YA ha sido aprobado por admin */}
+                {service.configuration?.adminApproved && (
+                  <button
+                    onClick={() => handleToggleService(service.serviceId, service.isActive)}
+                    className={`px-3 py-2 rounded text-sm flex items-center ${
+                      service.isActive
+                        ? 'bg-red-600 text-white hover:bg-red-700'
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
+                    title={service.isActive ? 'Desactivar servicio' : 'Activar servicio'}
+                  >
+                    <Power className="w-4 h-4" />
+                  </button>
+                )}
+                
+                {/* Indicador de pendiente de aprobación */}
+                {!service.configuration?.adminApproved && (
+                  <div className="px-3 py-2 rounded text-sm bg-yellow-100 text-yellow-800 flex items-center">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    <span className="text-xs">Pending Approval</span>
+                  </div>
+                )}
                 <button
                   onClick={() => handleDeleteService(service.serviceId, service.serviceName)}
                   className="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 flex items-center"
