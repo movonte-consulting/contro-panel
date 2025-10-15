@@ -141,7 +141,16 @@ export const useServiceValidation = () => {
         API_ENDPOINTS.SERVICE_VALIDATION_PROTECTED_TOKEN,
         { serviceId }
       );
-      return response.data!;
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Error al generar token protegido');
+      }
+      
+      if (!response.data) {
+        throw new Error('No se recibieron datos del servidor');
+      }
+      
+      return response.data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al generar token protegido';
       setError(errorMessage);

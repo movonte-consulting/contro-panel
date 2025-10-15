@@ -23,12 +23,21 @@ export const useApi = () => {
 
     // Si requiere autenticación pero no hay token, retornar error
     if (requireAuth && !token) {
-      console.log('❌ No hay token de autenticación, redirigiendo al login');
-      logout();
-      return {
-        success: false,
-        error: 'No autenticado. Redirigiendo al login...',
-      };
+      console.log('❌ No hay token de autenticación');
+      // Solo hacer logout para endpoints críticos de autenticación
+      if (endpoint.includes('/auth/') || endpoint.includes('/profile')) {
+        logout();
+        return {
+          success: false,
+          error: 'No autenticado. Redirigiendo al login...',
+        };
+      } else {
+        // Para otros endpoints, solo devolver error sin hacer logout
+        return {
+          success: false,
+          error: 'No autenticado. Por favor, inicia sesión nuevamente.',
+        };
+      }
     }
 
     // Preparar headers

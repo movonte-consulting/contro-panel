@@ -40,10 +40,15 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
       setTokenLoading(true);
       generateProtectedToken(service.serviceId)
         .then(response => {
-          setProtectedToken(response.protectedToken);
+          if (response && response.protectedToken) {
+            setProtectedToken(response.protectedToken);
+          } else {
+            console.warn('No se pudo obtener el token protegido del servicio');
+          }
         })
         .catch(error => {
           console.error('Error generating protected token:', error);
+          // No hacer logout aquí, solo mostrar error en la UI
         })
         .finally(() => {
           setTokenLoading(false);
@@ -198,9 +203,35 @@ print(result)`;
                     </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-green-700">
-                    Error al generar el token protegido. Intenta nuevamente.
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-red-700">
+                      No se pudo generar el token protegido.
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Verifica que el servicio esté activo y que tengas permisos para acceder a él.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setProtectedToken('');
+                        setTokenLoading(true);
+                        generateProtectedToken(service.serviceId)
+                          .then(response => {
+                            if (response && response.protectedToken) {
+                              setProtectedToken(response.protectedToken);
+                            }
+                          })
+                          .catch(error => {
+                            console.error('Error generating protected token:', error);
+                          })
+                          .finally(() => {
+                            setTokenLoading(false);
+                          });
+                      }}
+                      className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition-colors"
+                    >
+                      Reintentar
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
