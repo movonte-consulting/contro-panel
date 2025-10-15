@@ -45,6 +45,15 @@ export const API_ENDPOINTS = {
   USER_WEBHOOKS_SAVE: `${API_BASE_URL}/api/user/webhooks/save`,
   USER_WEBHOOKS_DELETE: (id: string) => `${API_BASE_URL}/api/user/webhooks/${id}`,
   
+  // Service Validation (Validación de Servicios)
+  SERVICE_VALIDATION_REQUEST: `${API_BASE_URL}/api/user/service-validation/request`,
+  SERVICE_VALIDATION_REQUESTS: `${API_BASE_URL}/api/user/service-validation/requests`,
+  SERVICE_VALIDATION_PENDING: `${API_BASE_URL}/api/admin/service-validation/pending`,
+  SERVICE_VALIDATION_APPROVE: (id: string) => `${API_BASE_URL}/api/admin/service-validation/${id}/approve`,
+  SERVICE_VALIDATION_REJECT: (id: string) => `${API_BASE_URL}/api/admin/service-validation/${id}/reject`,
+  SERVICE_VALIDATION_PROTECTED_TOKEN: `${API_BASE_URL}/api/user/service-validation/protected-token`,
+  SERVICE_VALIDATION_VALIDATE_TOKEN: `${API_BASE_URL}/api/service-validation/validate-token`,
+  
   // Admin Users Management
   ADMIN_USERS: `${API_BASE_URL}/api/admin/users`,
   ADMIN_USER_UPDATE: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}`,
