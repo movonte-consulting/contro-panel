@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Copy, 
@@ -8,8 +8,10 @@ import {
   Key, 
   MessageSquare,
   ExternalLink,
-  Info
+  Info,
+  Loader2
 } from 'lucide-react';
+import { useServiceValidation } from '../hooks/useServiceValidation';
 
 interface ServiceEndpointsModalProps {
   isOpen: boolean;
@@ -28,6 +30,26 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
   service 
 }) => {
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
+  const [protectedToken, setProtectedToken] = useState<string>('');
+  const [tokenLoading, setTokenLoading] = useState(false);
+  const { generateProtectedToken } = useServiceValidation();
+
+  // Generar token protegido cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && !protectedToken) {
+      setTokenLoading(true);
+      generateProtectedToken(service.serviceId)
+        .then(response => {
+          setProtectedToken(response.protectedToken);
+        })
+        .catch(error => {
+          console.error('Error generating protected token:', error);
+        })
+        .finally(() => {
+          setTokenLoading(false);
+        });
+    }
+  }, [isOpen, service.serviceId, protectedToken, generateProtectedToken]);
 
   if (!isOpen) return null;
 
@@ -53,7 +75,7 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
 
   const curlExample = `curl -X POST "${chatEndpoint}" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
   -d '{
     "message": "Hola, ¿cómo estás?",
     "threadId": "optional-thread-id"
@@ -64,7 +86,7 @@ const response = await fetch('${chatEndpoint}', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+    'Authorization': 'Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}'
   },
   body: JSON.stringify({
     message: 'Hola, ¿cómo estás?',
@@ -80,7 +102,7 @@ console.log(data);`;
 url = '${chatEndpoint}'
 headers = {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+    'Authorization': 'Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}'
 }
 data = {
     'message': 'Hola, ¿cómo estás?',
@@ -128,11 +150,58 @@ print(result)`;
                   Información Importante
                 </h3>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Reemplaza <code className="bg-blue-100 px-1 rounded">YOUR_JWT_TOKEN</code> con tu token de autenticación</li>
+                  <li>• Usa el <strong>Token Protegido</strong> mostrado abajo en lugar de tu token personal</li>
                   <li>• El <code className="bg-blue-100 px-1 rounded">threadId</code> es opcional para mantener conversaciones</li>
-                  <li>• Todos los endpoints requieren autenticación JWT</li>
+                  <li>• Todos los endpoints requieren el token protegido del servicio</li>
                   <li>• El servicio está configurado con el asistente: <strong>{service.assistantName}</strong></li>
                 </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Protected Token Section */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <Key className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-green-900 mb-2">
+                  Token Protegido del Servicio
+                </h3>
+                {tokenLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-green-600" />
+                    <span className="text-sm text-green-700">Generando token...</span>
+                  </div>
+                ) : protectedToken ? (
+                  <div className="space-y-2">
+                    <div className="bg-white border border-green-300 rounded p-3 font-mono text-sm break-all">
+                      {protectedToken}
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(protectedToken, 'protected-token')}
+                      className="flex items-center space-x-1 text-sm text-green-700 hover:text-green-800 transition-colors"
+                    >
+                      {copiedItems.has('protected-token') ? (
+                        <>
+                          <Check className="w-4 h-4 text-green-600" />
+                          <span className="text-green-600">Token copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4" />
+                          <span>Copiar token</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-xs text-green-700">
+                      Este token es específico para este servicio y no expone tus credenciales reales.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-green-700">
+                    Error al generar el token protegido. Intenta nuevamente.
+                  </p>
+                )}
               </div>
             </div>
           </div>

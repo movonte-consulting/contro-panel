@@ -11,7 +11,8 @@ import {
   FolderOpen,
   Bot,
   MessageCircle,
-  TestTube
+  TestTube,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
@@ -53,6 +54,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { icon: FolderOpen, label: 'Projects', path: '/dashboard/projects' },
     { icon: FileText, label: 'Management', path: '/dashboard/management' },
     { icon: Bot, label: 'My Services', path: '/dashboard/my-services' },
+    ...(user?.role === 'admin' ? [{ icon: Shield, label: 'Service Validations', path: '/dashboard/admin/service-validations' }] : []),
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
   ];
 

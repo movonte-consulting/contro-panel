@@ -9,6 +9,7 @@ import SettingsPage from '../components/SettingsPage';
 import UserServicesPage from '../components/UserServicesPage';
 import ChatPage from '../components/ChatPage';
 import ChatKitTestPage from '../components/ChatKitTestPage';
+import { AdminServiceValidationsPage } from '../components/AdminServiceValidationsPage';
 import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -99,6 +100,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <Layout>
           <UserServicesPage />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/admin/service-validations',
+    element: (
+      <ProtectedRoute>
+        <Layout>
+          <AdminServiceValidationsPage />
         </Layout>
       </ProtectedRoute>
     ),
