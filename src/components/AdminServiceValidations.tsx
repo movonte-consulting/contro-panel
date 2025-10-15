@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, XCircle, Globe, Calendar, User, MessageSquare, RefreshCw, AlertTriangle } from 'lucide-react';
-import { useServiceValidation, ServiceValidation } from '../hooks/useServiceValidation';
+import { Clock, CheckCircle, XCircle, Globe, Calendar, User, RefreshCw, AlertTriangle } from 'lucide-react';
+import { useServiceValidation, type ServiceValidation } from '../hooks/useServiceValidation';
 
 export const AdminServiceValidations: React.FC = () => {
   const { getPendingValidations, approveValidation, rejectValidation, loading, error } = useServiceValidation();

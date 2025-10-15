@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, Shield, CheckCircle, XCircle, Loader2, Info } from 'lucide-react';
-import { useServiceValidation, ServiceValidationRequest } from '../hooks/useServiceValidation';
+import { useServiceValidation, type ServiceValidationRequest } from '../hooks/useServiceValidation';
 
 interface ServiceValidationFormProps {
   onSuccess?: (validation: any) => void;

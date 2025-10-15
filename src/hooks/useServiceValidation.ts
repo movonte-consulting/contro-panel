@@ -49,7 +49,7 @@ export const useServiceValidation = () => {
 
     try {
       const response = await post<ServiceValidation>(API_ENDPOINTS.SERVICE_VALIDATION_REQUEST, request);
-      return response.data;
+      return response.data!;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al crear solicitud de validación';
       setError(errorMessage);
@@ -66,7 +66,7 @@ export const useServiceValidation = () => {
 
     try {
       const response = await get<{ validations: ServiceValidation[] }>(API_ENDPOINTS.SERVICE_VALIDATION_REQUESTS);
-      return response.data.validations;
+      return response.data?.validations || [];
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al obtener solicitudes de validación';
       setError(errorMessage);
@@ -87,7 +87,7 @@ export const useServiceValidation = () => {
 
     try {
       const response = await get<{ validations: ServiceValidation[] }>(API_ENDPOINTS.SERVICE_VALIDATION_PENDING);
-      return response.data.validations;
+      return response.data?.validations || [];
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al obtener solicitudes pendientes';
       setError(errorMessage);
@@ -111,7 +111,7 @@ export const useServiceValidation = () => {
         API_ENDPOINTS.SERVICE_VALIDATION_APPROVE(validationId.toString()),
         { adminNotes }
       );
-      return response.data;
+      return response.data!;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al aprobar solicitud';
       setError(errorMessage);
@@ -135,7 +135,7 @@ export const useServiceValidation = () => {
         API_ENDPOINTS.SERVICE_VALIDATION_REJECT(validationId.toString()),
         { adminNotes }
       );
-      return response.data;
+      return response.data!;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al rechazar solicitud';
       setError(errorMessage);
@@ -155,7 +155,7 @@ export const useServiceValidation = () => {
         API_ENDPOINTS.SERVICE_VALIDATION_PROTECTED_TOKEN,
         { serviceId }
       );
-      return response.data;
+      return response.data!;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al generar token protegido';
       setError(errorMessage);
@@ -175,7 +175,7 @@ export const useServiceValidation = () => {
         API_ENDPOINTS.SERVICE_VALIDATION_VALIDATE_TOKEN,
         { protectedToken }
       );
-      return response.data;
+      return response.data!;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al validar token';
       setError(errorMessage);
