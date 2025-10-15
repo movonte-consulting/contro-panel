@@ -164,7 +164,23 @@ export const ServiceValidationForm: React.FC<ServiceValidationFormProps> = ({ on
             type="text"
             id="requestedDomain"
             value={formData.requestedDomain}
-            onChange={(e) => handleInputChange('requestedDomain', e.target.value)}
+            onChange={(e) => {
+              let domain = e.target.value;
+              // Si el usuario ingresa una URL completa, extraer solo el dominio
+              try {
+                if (domain.includes('://')) {
+                  const url = new URL(domain);
+                  domain = url.hostname;
+                  // Remover www. si está presente
+                  if (domain.startsWith('www.')) {
+                    domain = domain.substring(4);
+                  }
+                }
+              } catch {
+                // Si no es una URL válida, usar el valor tal como está
+              }
+              handleInputChange('requestedDomain', domain);
+            }}
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               validationErrors.requestedDomain ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -172,7 +188,7 @@ export const ServiceValidationForm: React.FC<ServiceValidationFormProps> = ({ on
             disabled={loading}
           />
           <p className="mt-1 text-sm text-gray-500">
-            Solo el dominio (sin https:// o www)
+            Solo el dominio (sin https:// o www). Las URLs se convertirán automáticamente a dominios.
           </p>
           {validationErrors.requestedDomain && (
             <p className="mt-1 text-sm text-red-600">{validationErrors.requestedDomain}</p>

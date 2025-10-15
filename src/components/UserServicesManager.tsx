@@ -161,13 +161,29 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                 <input
                   type="text"
                   value={validationData.requestedDomain}
-                  onChange={(e) => setValidationData(prev => ({ ...prev, requestedDomain: e.target.value }))}
+                  onChange={(e) => {
+                    let domain = e.target.value;
+                    // Si el usuario ingresa una URL completa, extraer solo el dominio
+                    try {
+                      if (domain.includes('://')) {
+                        const url = new URL(domain);
+                        domain = url.hostname;
+                        // Remover www. si está presente
+                        if (domain.startsWith('www.')) {
+                          domain = domain.substring(4);
+                        }
+                      }
+                    } catch {
+                      // Si no es una URL válida, usar el valor tal como está
+                    }
+                    setValidationData(prev => ({ ...prev, requestedDomain: domain }));
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="mi-sitio.com"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Only the domain (without https:// or www)
+                  Only the domain (without https:// or www). URLs will be automatically converted to domains.
                 </p>
               </div>
             </div>
