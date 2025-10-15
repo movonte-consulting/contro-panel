@@ -208,7 +208,7 @@ print(result)`;
                       No se pudo generar el token protegido.
                     </p>
                     <p className="text-xs text-gray-600">
-                      Verifica que el servicio esté activo y que tengas permisos para acceder a él.
+                      Verifica que el servicio esté activo y aprobado por el administrador.
                     </p>
                     <button
                       onClick={() => {
