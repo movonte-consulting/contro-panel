@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Globe, Calendar, User, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useServiceValidation, type ServiceValidation } from '../hooks/useServiceValidation';
+import { useAuth } from '../hooks/useAuth';
 
 export const AdminServiceValidations: React.FC = () => {
+  const { user, isLoading: authLoading } = useAuth();
   const { getPendingValidations, approveValidation, rejectValidation, loading, error } = useServiceValidation();
   const [validations, setValidations] = useState<ServiceValidation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -23,8 +25,11 @@ export const AdminServiceValidations: React.FC = () => {
   };
 
   useEffect(() => {
-    loadValidations();
-  }, []);
+    // Solo cargar validaciones si el usuario está autenticado y no está cargando
+    if (!authLoading && user) {
+      loadValidations();
+    }
+  }, [authLoading, user]);
 
   const handleApprove = async (validation: ServiceValidation) => {
     try {
@@ -65,6 +70,31 @@ export const AdminServiceValidations: React.FC = () => {
       minute: '2-digit'
     });
   };
+
+  // Mostrar loading mientras se autentica el usuario
+  if (authLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-center py-8">
+          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
+          <span className="ml-2 text-gray-600">Authenticating user...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Verificar que el usuario esté autenticado
+  if (!user) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="text-center py-8">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">User not authenticated</h3>
+          <p className="text-gray-600">Please log in to access this page</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading && validations.length === 0) {
     return (

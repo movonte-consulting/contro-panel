@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useApi } from './useApi';
-import { useAuth } from './useAuth';
 import { API_ENDPOINTS } from '../config/api';
 
 export interface ServiceValidationRequest {
@@ -38,7 +37,6 @@ export interface ProtectedTokenResponse {
 
 export const useServiceValidation = () => {
   const { post, get } = useApi();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,10 +76,6 @@ export const useServiceValidation = () => {
 
   // Obtener solicitudes pendientes (solo para admins)
   const getPendingValidations = useCallback(async (): Promise<ServiceValidation[]> => {
-    if (user?.role !== 'admin') {
-      throw new Error('Acceso denegado. Solo administradores.');
-    }
-
     setLoading(true);
     setError(null);
 
@@ -95,14 +89,10 @@ export const useServiceValidation = () => {
     } finally {
       setLoading(false);
     }
-  }, [get, user?.role]);
+  }, [get]);
 
   // Aprobar solicitud de validación (solo para admins)
   const approveValidation = useCallback(async (validationId: number, adminNotes?: string): Promise<ServiceValidation> => {
-    if (user?.role !== 'admin') {
-      throw new Error('Acceso denegado. Solo administradores.');
-    }
-
     setLoading(true);
     setError(null);
 
@@ -119,14 +109,10 @@ export const useServiceValidation = () => {
     } finally {
       setLoading(false);
     }
-  }, [post, user?.role]);
+  }, [post]);
 
   // Rechazar solicitud de validación (solo para admins)
   const rejectValidation = useCallback(async (validationId: number, adminNotes: string): Promise<ServiceValidation> => {
-    if (user?.role !== 'admin') {
-      throw new Error('Acceso denegado. Solo administradores.');
-    }
-
     setLoading(true);
     setError(null);
 
@@ -143,7 +129,7 @@ export const useServiceValidation = () => {
     } finally {
       setLoading(false);
     }
-  }, [post, user?.role]);
+  }, [post]);
 
   // Generar token protegido para servicio
   const generateProtectedToken = useCallback(async (serviceId: string): Promise<ProtectedTokenResponse> => {
