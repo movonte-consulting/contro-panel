@@ -29,7 +29,7 @@ export const AdminServiceValidations: React.FC = () => {
   const handleApprove = async (validation: ServiceValidation) => {
     try {
       setProcessingId(validation.id);
-      await approveValidation(validation.id, 'Aprobado por administrador');
+      await approveValidation(validation.id, 'Approved by administrator');
       await loadValidations(); // Recargar la lista
     } catch (err) {
       console.error('Error approving validation:', err);
@@ -57,7 +57,7 @@ export const AdminServiceValidations: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -71,7 +71,7 @@ export const AdminServiceValidations: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-center py-8">
           <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Cargando solicitudes...</span>
+          <span className="ml-2 text-gray-600">Loading requests...</span>
         </div>
       </div>
     );
@@ -82,13 +82,13 @@ export const AdminServiceValidations: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="text-center py-8">
           <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar solicitudes</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading requests</h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={loadValidations}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
           >
-            Reintentar
+            Retry
           </button>
         </div>
       </div>
@@ -100,8 +100,8 @@ export const AdminServiceValidations: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="text-center py-8">
           <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay solicitudes pendientes</h3>
-          <p className="text-gray-600">Todas las solicitudes de validación han sido procesadas.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No pending requests</h3>
+          <p className="text-gray-600">All validation requests have been processed.</p>
         </div>
       </div>
     );
@@ -113,8 +113,8 @@ export const AdminServiceValidations: React.FC = () => {
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Solicitudes de Validación Pendientes</h2>
-              <p className="text-sm text-gray-600">{validations.length} solicitud(es) pendiente(s)</p>
+              <h2 className="text-lg font-semibold text-gray-900">Pending Validation Requests</h2>
+              <p className="text-sm text-gray-600">{validations.length} pending request(s)</p>
             </div>
             <button
               onClick={loadValidations}
@@ -122,7 +122,7 @@ export const AdminServiceValidations: React.FC = () => {
               className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              Actualizar
+              Refresh
             </button>
           </div>
         </div>
@@ -136,7 +136,7 @@ export const AdminServiceValidations: React.FC = () => {
                     <h3 className="text-lg font-medium text-gray-900">{validation.serviceName}</h3>
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                       <Clock className="h-4 w-4" />
-                      Pendiente
+                      Pending
                     </span>
                   </div>
 
@@ -147,20 +147,20 @@ export const AdminServiceValidations: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <User className="h-4 w-4" />
-                      <span className="font-medium">Usuario:</span>
+                      <span className="font-medium">User:</span>
                       <span>{validation.user?.username || 'N/A'}</span>
                       <span className="text-gray-400">({validation.user?.email})</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Calendar className="h-4 w-4" />
-                      <span className="font-medium">Solicitado:</span>
+                      <span className="font-medium">Requested:</span>
                       <span>{formatDate(validation.createdAt)}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Globe className="h-4 w-4" />
-                      <span className="font-medium">Sitio Web:</span>
+                      <span className="font-medium">Website:</span>
                       <a 
                         href={validation.websiteUrl} 
                         target="_blank" 
@@ -173,7 +173,7 @@ export const AdminServiceValidations: React.FC = () => {
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Globe className="h-4 w-4" />
-                      <span className="font-medium">Dominio CORS:</span>
+                      <span className="font-medium">CORS Domain:</span>
                       <span className="font-mono text-gray-900">{validation.requestedDomain}</span>
                     </div>
                   </div>
@@ -190,7 +190,7 @@ export const AdminServiceValidations: React.FC = () => {
                     ) : (
                       <CheckCircle className="h-4 w-4" />
                     )}
-                    Aprobar
+                    Approve
                   </button>
 
                   <button
@@ -199,7 +199,7 @@ export const AdminServiceValidations: React.FC = () => {
                     className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <XCircle className="h-4 w-4" />
-                    Rechazar
+                    Reject
                   </button>
                 </div>
               </div>
@@ -217,14 +217,14 @@ export const AdminServiceValidations: React.FC = () => {
                 <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Rechazar Solicitud</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Reject Request</h3>
                 <p className="text-sm text-gray-600">{showRejectModal.serviceName}</p>
               </div>
             </div>
 
             <div className="mb-4">
               <label htmlFor="rejectNotes" className="block text-sm font-medium text-gray-700 mb-2">
-                Motivo del rechazo *
+                Rejection reason *
               </label>
               <textarea
                 id="rejectNotes"
@@ -232,7 +232,7 @@ export const AdminServiceValidations: React.FC = () => {
                 onChange={(e) => setRejectNotes(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 rows={4}
-                placeholder="Explica por qué se rechaza esta solicitud..."
+                placeholder="Explain why this request is being rejected..."
               />
             </div>
 
@@ -245,12 +245,12 @@ export const AdminServiceValidations: React.FC = () => {
                 {processingId === showRejectModal.id ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
-                    Rechazando...
+                    Rejecting...
                   </>
                 ) : (
                   <>
                     <XCircle className="h-4 w-4" />
-                    Rechazar
+                    Reject
                   </>
                 )}
               </button>
@@ -263,7 +263,7 @@ export const AdminServiceValidations: React.FC = () => {
                 disabled={processingId === showRejectModal.id}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
               >
-                Cancelar
+                Cancel
               </button>
             </div>
           </div>

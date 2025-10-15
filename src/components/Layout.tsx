@@ -48,7 +48,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
-    { icon: MessageCircle, label: 'Chat IA', path: '/dashboard/chat' },
+    { icon: MessageCircle, label: 'AI Chat', path: '/dashboard/chat' },
     { icon: TestTube, label: 'ChatKit Test', path: '/dashboard/chatkit-test' },
     { icon: Users, label: 'Users', path: '/dashboard/users' },
     { icon: FolderOpen, label: 'Projects', path: '/dashboard/projects' },
@@ -142,7 +142,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-400 rounded-lg hover:bg-red-900 hover:text-red-300 transition-colors"
           >
             <LogOut className="w-5 h-5 mr-3" />
-            Cerrar Sesión
+            Logout
           </button>
         </div>
       </div>
@@ -161,7 +161,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-gray-500">
-                  Bienvenido, {profile?.username || user?.username || 'Usuario'}
+                  Welcome, {profile?.username || user?.username || 'User'}
                 </div>
                 {(profile?.role || user?.role) && (
                   <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">

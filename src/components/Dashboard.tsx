@@ -95,7 +95,7 @@ const Dashboard: React.FC = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2"
           >
             <MessageCircle className="w-6 h-6" />
-            <span className="hidden sm:block font-medium">Chat IA</span>
+            <span className="hidden sm:block font-medium">AI Chat</span>
           </button>
         </div>
       )}
