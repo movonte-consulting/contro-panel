@@ -22,6 +22,7 @@ interface CreateServiceModalProps {
   onClose: () => void;
   onCreate: (data: CreateServiceData, validationInfo?: ServiceValidationData) => Promise<void>;
   assistants: Array<{ id: string; name: string }>;
+  projects: Array<{ id: string; key: string; name: string; description?: string }>;
 }
 
 interface ServiceValidationData {
@@ -33,13 +34,15 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
   isOpen, 
   onClose, 
   onCreate, 
-  assistants 
+  assistants,
+  projects
 }) => {
   const [formData, setFormData] = useState<CreateServiceData>({
     serviceId: '',
     serviceName: '',
     assistantId: '',
-    assistantName: ''
+    assistantName: '',
+    projectKey: ''
   });
   const [validationData, setValidationData] = useState<ServiceValidationData>({
     websiteUrl: '',
@@ -49,7 +52,7 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.serviceId || !formData.serviceName || !formData.assistantId) return;
+    if (!formData.serviceId || !formData.serviceName || !formData.assistantId || !formData.projectKey) return;
     if (!validationData.websiteUrl || !validationData.requestedDomain) return;
 
     setIsSubmitting(true);
@@ -130,6 +133,28 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Jira Project
+            </label>
+            <select
+              value={formData.projectKey}
+              onChange={(e) => setFormData(prev => ({ ...prev, projectKey: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select a Jira project...</option>
+              {projects.map(project => (
+                <option key={project.key} value={project.key}>
+                  {project.name} ({project.key})
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Select the Jira project where this service will be implemented
+            </p>
           </div>
 
           <div className="border-t pt-4">
@@ -332,8 +357,9 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, serviceId, servi
 
     try {
       const response = await onChat(serviceId, userMessage, threadId);
-      if (response) {
-        console.log('📝 Full AI response received:', response.response);
+      console.log('📝 Full AI response received:', response);
+      
+      if (response && response.success) {
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
           content: response.response || 'No response received', 
@@ -343,10 +369,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, serviceId, servi
           setThreadId(response.threadId);
         }
       } else {
-        console.error('❌ No response received from chat service');
+        console.error('❌ No valid response received from chat service:', response);
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
-          content: 'Error: No response received from the service', 
+          content: 'Error: No valid response received from the service', 
           timestamp: new Date() 
         }]);
       }
@@ -426,13 +452,15 @@ export const UserServicesManager: React.FC = () => {
   const {
     services,
     assistants,
+    projects,
     isLoading,
     error,
     createService,
     updateService,
     deleteService,
     chatWithService,
-    loadUserAssistants
+    loadUserAssistants,
+    loadUserProjects
   } = useUserServices();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -522,12 +550,17 @@ export const UserServicesManager: React.FC = () => {
     return await chatWithService(serviceId, message, threadId);
   };
 
-  // Cargar asistentes cuando se abre el modal de crear servicio
+  // Cargar asistentes y proyectos cuando se abre el modal de crear servicio
   React.useEffect(() => {
-    if (showCreateModal && assistants.length === 0) {
-      loadUserAssistants();
+    if (showCreateModal) {
+      if (assistants.length === 0) {
+        loadUserAssistants();
+      }
+      if (projects.length === 0) {
+        loadUserProjects();
+      }
     }
-  }, [showCreateModal, assistants.length, loadUserAssistants]);
+  }, [showCreateModal, assistants.length, projects.length, loadUserAssistants, loadUserProjects]);
 
   if (isLoading) {
     return (
@@ -689,6 +722,7 @@ export const UserServicesManager: React.FC = () => {
         onClose={() => setShowCreateModal(false)}
         onCreate={handleCreateService}
         assistants={assistants}
+        projects={projects}
       />
 
       <ChatModal

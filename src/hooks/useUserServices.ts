@@ -46,6 +46,7 @@ export interface CreateServiceData {
   serviceName: string;
   assistantId: string;
   assistantName: string;
+  projectKey: string;
 }
 
 export interface UpdateServiceData {
