@@ -81,8 +81,8 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
             <Settings className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Configuración de Tokens</h2>
-            <p className="text-sm text-gray-600">Configura tus tokens de Jira y OpenAI</p>
+            <h2 className="text-xl font-semibold text-gray-900">Token Configuration</h2>
+            <p className="text-sm text-gray-600">Configure your Jira and OpenAI tokens</p>
           </div>
         </div>
       </div>
@@ -92,11 +92,11 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
         <div className="flex items-start">
           <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
           <div>
-            <h3 className="text-sm font-semibold text-blue-900 mb-1">Información importante</h3>
+            <h3 className="text-sm font-semibold text-blue-900 mb-1">Important Information</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Los tokens se almacenan de forma segura y solo son accesibles para tu cuenta</li>
-              <li>• Puedes actualizar estos tokens en cualquier momento</li>
-              <li>• Los tokens son necesarios para el funcionamiento de los servicios personalizados</li>
+              <li>• Tokens are stored securely and are only accessible to your account</li>
+              <li>• You can update these tokens at any time</li>
+              <li>• Tokens are required for the operation of personalized services</li>
             </ul>
           </div>
         </div>
@@ -123,7 +123,7 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Globe className="w-4 h-4 inline mr-2" />
-            URL de Jira
+            Jira URL
           </label>
           <input
             type="url"
@@ -131,11 +131,11 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
             value={formData.jiraUrl}
             onChange={handleInputChange}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://miempresa.atlassian.net"
+            placeholder="https://yourcompany.atlassian.net"
             required
           />
           <p className="text-xs text-gray-500 mt-1">
-            La URL de tu instancia de Jira
+            The URL of your Jira instance
           </p>
         </div>
 
@@ -143,7 +143,7 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Key className="w-4 h-4 inline mr-2" />
-            Token de Jira
+            Jira Token
           </label>
           <div className="relative">
             <input
@@ -164,7 +164,7 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Token de API de Jira (Jira → Perfil → Seguridad → Crear y usar tokens de API)
+            Jira API Token (Jira → Profile → Security → Create and use API tokens)
           </p>
         </div>
 
@@ -172,7 +172,7 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <Bot className="w-4 h-4 inline mr-2" />
-            Token de OpenAI
+            OpenAI Token
           </label>
           <div className="relative">
             <input
@@ -193,14 +193,14 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Token de API de OpenAI (<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI Platform</a>)
+            OpenAI API Token (<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI Platform</a>)
           </p>
         </div>
 
         {/* Validation Results */}
         {validationResult && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Resultados de Validación</h4>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Validation Results</h4>
             <div className="space-y-2">
               <div className="flex items-center">
                 {validationResult.jiraToken.isValid ? (
@@ -234,7 +234,7 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
               onClick={onCancel}
               className="px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
             >
-              Cancelar
+              Cancel
             </button>
           )}
           
@@ -247,10 +247,10 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
             {isValidating ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Validando...
+                Validating...
               </>
             ) : (
-              'Validar Tokens'
+              'Validate Tokens'
             )}
           </button>
           
@@ -262,12 +262,12 @@ const TokenConfiguration: React.FC<TokenConfigurationProps> = ({
             {isLoading ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Guardando...
+                Saving...
               </>
             ) : (
               <>
                 <Save className="w-5 h-5 mr-2" />
-                Guardar Configuración
+                Save Configuration
               </>
             )}
           </button>

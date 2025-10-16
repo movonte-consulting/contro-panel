@@ -110,8 +110,8 @@ const InitialSetup: React.FC = () => {
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Key className="w-8 h-8 text-blue-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Configuración Inicial</h1>
-            <p className="text-gray-600">Configura tus tokens de Jira y OpenAI para comenzar a usar el sistema</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Initial Setup</h1>
+            <p className="text-gray-600">Configure your Jira and OpenAI tokens to start using the system</p>
           </div>
 
           {/* Step Indicator */}
@@ -142,11 +142,11 @@ const InitialSetup: React.FC = () => {
             <div className="flex items-start">
               <Info className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-semibold text-blue-900 mb-1">Información sobre los tokens</h3>
+                <h3 className="text-sm font-semibold text-blue-900 mb-1">Token Information</h3>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• <strong>Jira Token:</strong> Necesario para conectar con tu instancia de Jira</li>
-                  <li>• <strong>OpenAI Token:</strong> Requerido para el funcionamiento de los asistentes de IA</li>
-                  <li>• Los tokens se almacenan de forma segura y solo son accesibles para tu cuenta</li>
+                  <li>• <strong>Jira Token:</strong> Required to connect with your Jira instance</li>
+                  <li>• <strong>OpenAI Token:</strong> Required for AI assistants functionality</li>
+                  <li>• Tokens are stored securely and are only accessible to your account</li>
                 </ul>
               </div>
             </div>
@@ -173,7 +173,7 @@ const InitialSetup: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Globe className="w-4 h-4 inline mr-2" />
-                URL de Jira
+                Jira URL
               </label>
               <input
                 type="url"
@@ -181,11 +181,11 @@ const InitialSetup: React.FC = () => {
                 value={formData.jiraUrl}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="https://miempresa.atlassian.net"
+                placeholder="https://yourcompany.atlassian.net"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                La URL de tu instancia de Jira (ej: https://miempresa.atlassian.net)
+                The URL of your Jira instance (e.g: https://yourcompany.atlassian.net)
               </p>
             </div>
 
@@ -193,7 +193,7 @@ const InitialSetup: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Key className="w-4 h-4 inline mr-2" />
-                Token de Jira
+                Jira Token
               </label>
               <div className="relative">
                 <input
@@ -214,7 +214,7 @@ const InitialSetup: React.FC = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Puedes obtener tu token en: Jira → Perfil → Seguridad → Crear y usar tokens de API
+                You can get your token at: Jira → Profile → Security → Create and use API tokens
               </p>
             </div>
 
@@ -222,7 +222,7 @@ const InitialSetup: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Bot className="w-4 h-4 inline mr-2" />
-                Token de OpenAI
+                OpenAI Token
               </label>
               <div className="relative">
                 <input
@@ -243,14 +243,14 @@ const InitialSetup: React.FC = () => {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Puedes obtener tu token en: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI Platform</a>
+                You can get your token at: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI Platform</a>
               </p>
             </div>
 
             {/* Validation Results */}
             {validationResult && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">Resultados de Validación</h4>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Validation Results</h4>
                 <div className="space-y-2">
                   <div className="flex items-center">
                     {validationResult.jiraToken.isValid ? (
@@ -287,10 +287,10 @@ const InitialSetup: React.FC = () => {
                 {isValidating ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Validando...
+                    Validating...
                   </>
                 ) : (
-                  'Validar Tokens'
+                  'Validate Tokens'
                 )}
               </button>
               
@@ -302,10 +302,10 @@ const InitialSetup: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Configurando...
+                    Configuring...
                   </>
                 ) : (
-                  'Completar Configuración'
+                  'Complete Setup'
                 )}
               </button>
             </div>
@@ -314,7 +314,7 @@ const InitialSetup: React.FC = () => {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-500">
-              Al completar la configuración, aceptas que tus tokens se almacenen de forma segura en nuestro sistema.
+              By completing the setup, you agree that your tokens will be stored securely in our system.
             </p>
           </div>
         </div>
