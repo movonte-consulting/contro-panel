@@ -333,14 +333,22 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, serviceId, servi
     try {
       const response = await onChat(serviceId, userMessage, threadId);
       if (response) {
+        console.log('📝 Full AI response received:', response.response);
         setChatHistory(prev => [...prev, { 
           type: 'assistant', 
-          content: response.response, 
+          content: response.response || 'No response received', 
           timestamp: new Date() 
         }]);
         if (response.threadId) {
           setThreadId(response.threadId);
         }
+      } else {
+        console.error('❌ No response received from chat service');
+        setChatHistory(prev => [...prev, { 
+          type: 'assistant', 
+          content: 'Error: No response received from the service', 
+          timestamp: new Date() 
+        }]);
       }
     } catch (error) {
       console.error('Error chatting:', error);

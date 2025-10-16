@@ -50,22 +50,22 @@ export const useProjects = (): UseProjectsReturn => {
       const endpoint = isAdmin ? API_ENDPOINTS.PROJECTS : API_ENDPOINTS.USER_PROJECTS;
       
       console.log(`🔄 Loading ${isAdmin ? 'admin' : 'user'} projects...`);
-      const response = await get<{ data: Project[] }>(endpoint);
+      const response = await get<any>(endpoint);
       
       console.log(`📊 ${isAdmin ? 'Admin' : 'User'} projects response received:`, response);
       
       if (response.success && response.data) {
-        const projects = response.data;
-        console.log(`📊 ${isAdmin ? 'Admin' : 'User'} projects data received:`, projects);
+        const responseData = response.data;
+        console.log(`📊 ${isAdmin ? 'Admin' : 'User'} projects data received:`, responseData);
         
-        // Para admin, los datos vienen del endpoint de proyectos con estructura diferente
+        // Para admin, los datos vienen del endpoint de proyectos con estructura { count, projects }
         let projectsArray: Project[] = [];
         if (isAdmin) {
-          // Admin: response.data (array directo)
-          projectsArray = Array.isArray(projects) ? projects : [];
+          // Admin: response.data.projects (array dentro de objeto con count)
+          projectsArray = responseData.projects || [];
         } else {
           // Usuario: response.data (array directo o con propiedad data)
-          projectsArray = Array.isArray(projects) ? projects : (projects as any)?.data || [];
+          projectsArray = Array.isArray(responseData) ? responseData : responseData?.data || [];
         }
         
         setProjects(projectsArray);

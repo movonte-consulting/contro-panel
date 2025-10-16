@@ -304,6 +304,44 @@ print(result)`;
                 Verifica el estado del servicio y obtiene información sobre su configuración.
               </p>
             </div>
+
+            {/* Webhook Endpoint */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Webhook de Jira</h3>
+                  <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">POST</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard('https://chat.movonte.com/api/chatkit/webhook/jira', 'webhook-endpoint')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('webhook-endpoint') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
+                https://chat.movonte.com/api/chatkit/webhook/jira
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Configura este webhook en tu proyecto de Jira para recibir notificaciones automáticas.
+              </p>
+              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Importante:</strong> Agrega este webhook en la configuración de tu proyecto de Jira para que la IA pueda responder automáticamente a los tickets.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Code Examples */}
