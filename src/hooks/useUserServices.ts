@@ -53,6 +53,7 @@ export interface UpdateServiceData {
   assistantId?: string;
   assistantName?: string;
   isActive?: boolean;
+  configuration?: any;
 }
 
 export interface ChatResponse {

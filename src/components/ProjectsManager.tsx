@@ -1,40 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Loader2, FolderOpen, CheckCircle, AlertCircle } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
-import { useActivityContext } from '../contexts/ActivityContext';
 
 const ProjectsManager: React.FC = () => {
-  const { projects, activeProject, isLoading, error, setActiveProject } = useProjects();
-  const { addActivity } = useActivityContext();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleProjectChange = async (projectKey: string) => {
-    if (!projectKey) return;
-
-    setIsUpdating(true);
-    setSuccessMessage('');
-    setErrorMessage('');
-
-    try {
-      const success = await setActiveProject(projectKey);
-      if (success) {
-        setSuccessMessage(`Proyecto activo cambiado a: ${projectKey}`);
-        addActivity(`Project changed to ${projectKey}`, 'success');
-        setTimeout(() => setSuccessMessage(''), 3000);
-      } else {
-        setErrorMessage('Error al cambiar el proyecto activo');
-        addActivity(`Failed to change project to ${projectKey}`, 'error');
-        setTimeout(() => setErrorMessage(''), 5000);
-      }
-    } catch (err) {
-      setErrorMessage('Error de conexión al cambiar el proyecto');
-      setTimeout(() => setErrorMessage(''), 5000);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  const { projects, isLoading, error } = useProjects();
 
   if (isLoading) {
     return (
@@ -64,67 +33,21 @@ const ProjectsManager: React.FC = () => {
       </div>
 
       {/* Mensajes de estado */}
-      {successMessage && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded flex items-center">
-          <CheckCircle className="w-4 h-4 mr-2" />
-          {successMessage}
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
-          <AlertCircle className="w-4 h-4 mr-2" />
-          {errorMessage}
-        </div>
-      )}
 
       <div className="space-y-4">
-        {/* Proyecto Activo */}
-        <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-lg p-4">
-          <div className="flex justify-between items-center">
+        {/* Información sobre el nuevo sistema */}
+        <div className="bg-gradient-to-br from-green-500 to-blue-600 text-white rounded-lg p-4">
+          <div className="flex items-center">
+            <CheckCircle className="w-6 h-6 mr-3" />
             <div>
-              <div className="text-sm font-medium opacity-90">Proyecto Activo:</div>
+              <div className="text-sm font-medium opacity-90">Nuevo Sistema de Proyectos</div>
               <div className="text-lg font-semibold">
-                {activeProject ? (
-                  projects.find(p => p.key === activeProject)?.name || activeProject
-                ) : (
-                  'Ninguno'
-                )}
+                Cada servicio maneja su propio proyecto
+              </div>
+              <div className="text-sm opacity-90 mt-1">
+                Los usuarios ahora configuran el proyecto de Jira directamente en cada servicio
               </div>
             </div>
-            {activeProject && (
-              <div className="text-sm opacity-90">
-                Key: {activeProject}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Selector de Proyecto */}
-        <div>
-          <label htmlFor="projectSelect" className="block text-sm font-medium text-gray-700 mb-2">
-            Cambiar Proyecto Activo
-          </label>
-          <div className="flex gap-2">
-            <select
-              id="projectSelect"
-              value={activeProject || ''}
-              onChange={(e) => handleProjectChange(e.target.value)}
-              disabled={isUpdating}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              <option value="">Seleccionar proyecto...</option>
-              {projects.map((project) => (
-                <option key={project.key} value={project.key}>
-                  {project.name} ({project.key})
-                </option>
-              ))}
-            </select>
-            {isUpdating && (
-              <div className="flex items-center px-3 py-2">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-              </div>
-            )}
           </div>
         </div>
 

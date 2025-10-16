@@ -11,7 +11,7 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
-  // Settings
+  Settings
 } from 'lucide-react';
 import { useUserServices, type CreateServiceData } from '../hooks/useUserServices';
 import { useServiceValidation } from '../hooks/useServiceValidation';
@@ -467,7 +467,13 @@ export const UserServicesManager: React.FC = () => {
   const [showChatModal, setShowChatModal] = useState(false);
   const [showEndpointsModal, setShowEndpointsModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
+  const [showProjectConfigModal, setShowProjectConfigModal] = useState(false);
   const [selectedService, setSelectedService] = useState<{ id: string; name: string } | null>(null);
+  const [selectedServiceForConfig, setSelectedServiceForConfig] = useState<{
+    serviceId: string;
+    serviceName: string;
+    currentProjectKey?: string;
+  } | null>(null);
   const [createdService, setCreatedService] = useState<{
     serviceId: string;
     serviceName: string;
@@ -538,6 +544,34 @@ export const UserServicesManager: React.FC = () => {
     } catch (error) {
       setErrorMessage('Failed to delete service');
       setTimeout(() => setErrorMessage(null), 3000);
+    }
+  };
+
+  const handleConfigureProject = (service: any) => {
+    setSelectedServiceForConfig({
+      serviceId: service.serviceId,
+      serviceName: service.serviceName,
+      currentProjectKey: service.configuration?.projectKey || ''
+    });
+    setShowProjectConfigModal(true);
+  };
+
+  const handleUpdateProjectConfig = async (projectKey: string) => {
+    if (!selectedServiceForConfig) return;
+    
+    try {
+      // Aquí necesitamos crear una función para actualizar la configuración del proyecto
+      // Por ahora, vamos a usar la función de actualización existente
+      await updateService(selectedServiceForConfig.serviceId, {
+        configuration: { projectKey }
+      });
+      
+      setSuccessMessage(`Project configured successfully for "${selectedServiceForConfig.serviceName}"`);
+      setTimeout(() => setSuccessMessage(null), 5000);
+      setShowProjectConfigModal(false);
+      setSelectedServiceForConfig(null);
+    } catch (error) {
+      console.error('Error updating project configuration:', error);
     }
   };
 
@@ -663,6 +697,15 @@ export const UserServicesManager: React.FC = () => {
                   Test
                 </button>
                 
+                {/* Botón de Configurar Proyecto */}
+                <button
+                  onClick={() => handleConfigureProject(service)}
+                  className="bg-purple-600 text-white px-3 py-2 rounded text-sm hover:bg-purple-700 flex items-center"
+                  title="Configure Jira project"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                
                 {/* Botón de Endpoints - Solo visible si el servicio está activo */}
                 {service.isActive && (
                   <button
@@ -753,6 +796,54 @@ export const UserServicesManager: React.FC = () => {
         serviceName={createdService?.serviceName || ''}
         validationData={validationData}
       />
+
+      {/* Modal de Configuración de Proyecto */}
+      {selectedServiceForConfig && (
+        <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${showProjectConfigModal ? 'block' : 'hidden'}`}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Configure Jira Project
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Select the Jira project for service: <strong>{selectedServiceForConfig.serviceName}</strong>
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Current Project: {selectedServiceForConfig.currentProjectKey || 'Not configured'}
+              </label>
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleUpdateProjectConfig(e.target.value);
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                defaultValue=""
+              >
+                <option value="">Select a project...</option>
+                {projects.map(project => (
+                  <option key={project.key} value={project.key}>
+                    {project.name} ({project.key})
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowProjectConfigModal(false);
+                  setSelectedServiceForConfig(null);
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
