@@ -13,3 +13,4 @@ export const AdminServiceValidationsPage: React.FC = () => {
     </div>
   );
 };
+
