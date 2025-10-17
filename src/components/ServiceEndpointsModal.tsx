@@ -9,7 +9,9 @@ import {
   MessageSquare,
   ExternalLink,
   Info,
-  Loader2
+  Loader2,
+  Wifi,
+  Zap
 } from 'lucide-react';
 import { useServiceValidation } from '../hooks/useServiceValidation';
 
@@ -59,8 +61,10 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
   if (!isOpen) return null;
 
   const baseUrl = 'https://chat.movonte.com';
+  const wsBaseUrl = 'wss://chat.movonte.com';
   const chatEndpoint = `${baseUrl}/api/user/services/${service.serviceId}/chat`;
   const statusEndpoint = `${baseUrl}/api/user/services/${service.serviceId}/status`;
+  const wsEndpoint = `${wsBaseUrl}/socket.io/?serviceId=${service.serviceId}&token=${protectedToken || 'YOUR_PROTECTED_TOKEN'}`;
 
   const copyToClipboard = async (text: string, itemId: string) => {
     try {
@@ -118,6 +122,101 @@ response = requests.post(url, json=data, headers=headers)
 result = response.json()
 print(result)`;
 
+  const websocketExample = `// Conexión WebSocket con Socket.IO
+import { io } from 'socket.io-client';
+
+const socket = io('${wsBaseUrl}', {
+  query: {
+    serviceId: '${service.serviceId}',
+    token: '${protectedToken || 'YOUR_PROTECTED_TOKEN'}'
+  }
+});
+
+// Escuchar conexión
+socket.on('connect', () => {
+  console.log('Conectado al WebSocket:', socket.id);
+});
+
+// Escuchar respuestas del asistente
+socket.on('assistant_response', (data) => {
+  console.log('Respuesta del asistente:', data);
+});
+
+// Enviar mensaje
+socket.emit('user_message', {
+  message: 'Hola, ¿cómo estás?',
+  threadId: 'optional-thread-id'
+});
+
+// Desconectar
+socket.disconnect();`;
+
+  const websocketJavascriptExample = `// Conexión WebSocket con Socket.IO (JavaScript)
+import { io } from 'socket.io-client';
+
+const socket = io('${wsBaseUrl}', {
+  query: {
+    serviceId: '${service.serviceId}',
+    token: '${protectedToken || 'YOUR_PROTECTED_TOKEN'}'
+  }
+});
+
+// Escuchar conexión
+socket.on('connect', () => {
+  console.log('Conectado al WebSocket:', socket.id);
+});
+
+// Escuchar respuestas del asistente
+socket.on('assistant_response', (data) => {
+  console.log('Respuesta del asistente:', data);
+  // Actualizar UI con la respuesta
+  updateChatUI(data.response);
+});
+
+// Enviar mensaje
+function sendMessage(message, threadId = null) {
+  socket.emit('user_message', {
+    message: message,
+    threadId: threadId
+  });
+}
+
+// Desconectar
+function disconnect() {
+  socket.disconnect();
+}`;
+
+  const websocketPythonExample = `# Conexión WebSocket con python-socketio
+import socketio
+
+sio = socketio.Client()
+
+@sio.event
+def connect():
+    print('Conectado al WebSocket')
+
+@sio.event
+def assistant_response(data):
+    print('Respuesta del asistente:', data)
+
+@sio.event
+def disconnect():
+    print('Desconectado del WebSocket')
+
+# Conectar
+sio.connect('${wsBaseUrl}', 
+           query={'serviceId': '${service.serviceId}', 
+                  'token': '${protectedToken || 'YOUR_PROTECTED_TOKEN'}'})
+
+# Enviar mensaje
+sio.emit('user_message', {
+    'message': 'Hola, ¿cómo estás?',
+    'threadId': 'optional-thread-id'
+})
+
+# Mantener conexión activa
+sio.wait()`;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -158,6 +257,7 @@ print(result)`;
                   <li>• Usa el <strong>Token Protegido</strong> mostrado abajo en lugar de tu token personal</li>
                   <li>• El <code className="bg-blue-100 px-1 rounded">threadId</code> es opcional para mantener conversaciones</li>
                   <li>• Todos los endpoints requieren el token protegido del servicio</li>
+                  <li>• <strong>WebSocket</strong> para respuestas en tiempo real, <strong>REST API</strong> para requests puntuales</li>
                   <li>• El servicio está configurado con el asistente: <strong>{service.assistantName}</strong></li>
                 </ul>
               </div>
@@ -305,6 +405,55 @@ print(result)`;
               </p>
             </div>
 
+            {/* WebSocket Endpoint */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Wifi className="w-5 h-5 text-orange-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Conexión WebSocket</h3>
+                  <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">WS</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(wsEndpoint, 'websocket-endpoint')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('websocket-endpoint') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
+                {wsEndpoint}
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Conexión en tiempo real para recibir respuestas instantáneas del asistente.
+              </p>
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start">
+                  <Zap className="w-4 h-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm text-blue-800">
+                      <strong>Ventajas del WebSocket:</strong>
+                    </p>
+                    <ul className="text-xs text-blue-700 mt-1 space-y-1">
+                      <li>• Respuestas instantáneas en tiempo real</li>
+                      <li>• Mantiene el contexto de conversación</li>
+                      <li>• Ideal para aplicaciones interactivas</li>
+                      <li>• Soporte para múltiples eventos</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Webhook Endpoint */}
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
@@ -314,7 +463,7 @@ print(result)`;
                   <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">POST</span>
                 </div>
                 <button
-                  onClick={() => copyToClipboard('https://chat.movonte.com/api/chatkit/webhook/jira', 'webhook-endpoint')}
+                  onClick={() => copyToClipboard('https://chat.movonte.com/api/chatbot/webhook/jira', 'webhook-endpoint')}
                   className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   {copiedItems.has('webhook-endpoint') ? (
@@ -331,7 +480,7 @@ print(result)`;
                 </button>
               </div>
               <div className="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
-                https://chat.movonte.com/api/chatkit/webhook/jira
+                https://chat.movonte.com/api/chatbot/webhook/jira
               </div>
               <p className="text-sm text-gray-600 mt-2">
                 Configura este webhook en tu proyecto de Jira para recibir notificaciones automáticas.
@@ -438,11 +587,81 @@ print(result)`;
             </div>
           </div>
 
+          {/* WebSocket Code Examples */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Wifi className="w-5 h-5 mr-2" />
+              Ejemplos de Conexión WebSocket
+            </h3>
+
+            <div className="space-y-6">
+              {/* WebSocket JavaScript Example */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gray-100 px-4 py-2 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700">JavaScript/TypeScript</span>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(websocketJavascriptExample, 'ws-js-example')}
+                    className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {copiedItems.has('ws-js-example') ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-green-600">Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
+                  <code>{websocketJavascriptExample}</code>
+                </pre>
+              </div>
+
+              {/* WebSocket Python Example */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gray-100 px-4 py-2 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700">Python</span>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(websocketPythonExample, 'ws-python-example')}
+                    className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {copiedItems.has('ws-python-example') ? (
+                      <>
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-green-600">Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
+                  <code>{websocketPythonExample}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
+
           {/* Response Format */}
           <div className="mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Formato de Respuesta</h3>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <pre className="text-sm text-gray-800 overflow-x-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Formatos de Respuesta</h3>
+            
+            {/* HTTP Response Format */}
+            <div className="mb-6">
+              <h4 className="text-md font-medium text-gray-800 mb-2">Respuesta HTTP (REST API)</h4>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <pre className="text-sm text-gray-800 overflow-x-auto">
 {`{
   "success": true,
   "data": {
@@ -453,7 +672,57 @@ print(result)`;
   },
   "timestamp": "2024-01-01T12:00:00Z"
 }`}
-              </pre>
+                </pre>
+              </div>
+            </div>
+
+            {/* WebSocket Response Format */}
+            <div className="mb-6">
+              <h4 className="text-md font-medium text-gray-800 mb-2">Eventos WebSocket</h4>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Evento: <code className="bg-gray-100 px-1 rounded">assistant_response</code></p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <pre className="text-sm text-gray-800 overflow-x-auto">
+{`{
+  "response": "Respuesta del asistente...",
+  "threadId": "thread-123",
+  "assistantId": "${service.assistantId}",
+  "assistantName": "${service.assistantName}",
+  "timestamp": "2024-01-01T12:00:00Z"
+}`}
+                    </pre>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Evento: <code className="bg-gray-100 px-1 rounded">connect</code></p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <pre className="text-sm text-gray-800 overflow-x-auto">
+{`{
+  "socketId": "socket-123",
+  "serviceId": "${service.serviceId}",
+  "status": "connected",
+  "timestamp": "2024-01-01T12:00:00Z"
+}`}
+                    </pre>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Evento: <code className="bg-gray-100 px-1 rounded">disconnect</code></p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <pre className="text-sm text-gray-800 overflow-x-auto">
+{`{
+  "socketId": "socket-123",
+  "serviceId": "${service.serviceId}",
+  "status": "disconnected",
+  "timestamp": "2024-01-01T12:00:00Z"
+}`}
+                    </pre>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
