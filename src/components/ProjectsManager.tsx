@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, FolderOpen, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, FolderOpen, CheckCircle } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 
 const ProjectsManager: React.FC = () => {
@@ -64,11 +64,7 @@ const ProjectsManager: React.FC = () => {
               projects.map((project) => (
                 <div
                   key={project.key}
-                  className={`p-3 rounded-lg border transition-all ${
-                    project.key === activeProject
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 bg-white hover:shadow-sm'
-                  }`}
+                  className="p-3 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
@@ -76,11 +72,6 @@ const ProjectsManager: React.FC = () => {
                         <h4 className="text-sm font-medium text-gray-900 truncate">
                           {project.name}
                         </h4>
-                        {project.key === activeProject && (
-                          <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                            Activo
-                          </span>
-                        )}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
                         <span>Key: {project.key}</span>
@@ -88,17 +79,9 @@ const ProjectsManager: React.FC = () => {
                       </div>
                     </div>
                     <div className="ml-4">
-                      <button
-                        onClick={() => handleProjectChange(project.key)}
-                        disabled={isUpdating || project.key === activeProject}
-                        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                          project.key === activeProject
-                            ? 'bg-blue-100 text-blue-800 cursor-not-allowed'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {project.key === activeProject ? 'Activo' : 'Activar'}
-                      </button>
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                        Disponible
+                      </span>
                     </div>
                   </div>
                 </div>
