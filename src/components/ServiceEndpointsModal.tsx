@@ -122,35 +122,6 @@ response = requests.post(url, json=data, headers=headers)
 result = response.json()
 print(result)`;
 
-  const websocketExample = `// Conexión WebSocket con Socket.IO
-import { io } from 'socket.io-client';
-
-const socket = io('${wsBaseUrl}', {
-  query: {
-    serviceId: '${service.serviceId}',
-    token: '${protectedToken || 'YOUR_PROTECTED_TOKEN'}'
-  }
-});
-
-// Escuchar conexión
-socket.on('connect', () => {
-  console.log('Conectado al WebSocket:', socket.id);
-});
-
-// Escuchar respuestas del asistente
-socket.on('assistant_response', (data) => {
-  console.log('Respuesta del asistente:', data);
-});
-
-// Enviar mensaje
-socket.emit('user_message', {
-  message: 'Hola, ¿cómo estás?',
-  threadId: 'optional-thread-id'
-});
-
-// Desconectar
-socket.disconnect();`;
-
   const websocketJavascriptExample = `// Conexión WebSocket con Socket.IO (JavaScript)
 import { io } from 'socket.io-client';
 
