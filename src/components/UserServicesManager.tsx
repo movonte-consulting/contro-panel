@@ -491,8 +491,10 @@ export const UserServicesManager: React.FC = () => {
     try {
       const result = await createService(data);
       if (result) {
-        setSuccessMessage(`Service '${data.serviceName}' created successfully`);
-        setTimeout(() => setSuccessMessage(null), 3000);
+        // Usar el mensaje del servidor que incluye información sobre admin
+        const message = result.message || `Service '${data.serviceName}' created successfully`;
+        setSuccessMessage(message);
+        setTimeout(() => setSuccessMessage(null), 5000);
         
         // Guardar la información del servicio creado
         setCreatedService({
@@ -502,13 +504,17 @@ export const UserServicesManager: React.FC = () => {
           assistantName: data.assistantName
         });
 
-        // Si hay información de validación, mostrar modal de validación
-        if (validationInfo) {
-          setValidationData(validationInfo);
-          setShowValidationModal(true);
-        } else {
-          // Si no hay validación, mostrar modal de endpoints directamente
+        // Si es admin, mostrar modal de endpoints directamente
+        if (result.isAdmin) {
           setShowEndpointsModal(true);
+        } else {
+          // Si no es admin, mostrar modal de validación
+          if (validationInfo) {
+            setValidationData(validationInfo);
+            setShowValidationModal(true);
+          } else {
+            setShowEndpointsModal(true);
+          }
         }
       }
     } catch (error) {
@@ -671,9 +677,16 @@ export const UserServicesManager: React.FC = () => {
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   service.isActive 
                     ? 'bg-green-100 text-green-800' 
-                    : 'bg-yellow-100 text-yellow-800'
+                    : service.configuration?.adminApproved 
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {service.isActive ? 'Active' : 'Pending'}
+                  {service.isActive 
+                    ? 'Active' 
+                    : service.configuration?.adminApproved 
+                      ? 'Approved'
+                      : 'Pending Approval'
+                  }
                 </span>
               </div>
 

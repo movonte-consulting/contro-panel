@@ -29,6 +29,7 @@ export interface UserService {
   configuration?: {
     adminApproved?: boolean;
     adminApprovedAt?: string;
+    projectKey?: string;
   };
 }
 
