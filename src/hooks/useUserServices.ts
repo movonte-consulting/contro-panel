@@ -58,6 +58,7 @@ export interface UpdateServiceData {
 }
 
 export interface ChatResponse {
+  success?: boolean;
   response: string;
   threadId: string;
   assistantId: string;
@@ -259,13 +260,18 @@ export const useUserServices = () => {
         threadId
       });
       
+      console.log('📦 Full response received:', response);
+      
       if (response.success) {
         console.log('✅ Chat response received:', response);
+        // La respuesta viene directamente en response, no en response.data
+        const apiResponse = response as any;
         return {
-          response: response.data?.response || '',
-          threadId: response.data?.threadId || '',
-          assistantId: response.data?.assistantId || '',
-          assistantName: response.data?.assistantName || ''
+          success: true,
+          response: apiResponse.response || response.data?.response || '',
+          threadId: apiResponse.threadId || response.data?.threadId || '',
+          assistantId: apiResponse.assistantId || response.data?.assistantId || '',
+          assistantName: apiResponse.assistantName || response.data?.assistantName || ''
         };
       } else {
         throw new Error(response.error || 'Failed to chat with service');
