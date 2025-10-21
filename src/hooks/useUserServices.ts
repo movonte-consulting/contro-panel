@@ -64,6 +64,11 @@ export interface ChatResponse {
   assistantName: string;
 }
 
+export interface CreateServiceResponse extends UserService {
+  message?: string;
+  isAdmin?: boolean;
+}
+
 export const useUserServices = () => {
   const { get, post, put, delete: deleteRequest } = useApi();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -175,7 +180,7 @@ export const useUserServices = () => {
   }, [get]);
 
   // Crear nuevo servicio
-  const createService = useCallback(async (serviceData: CreateServiceData): Promise<UserService | null> => {
+  const createService = useCallback(async (serviceData: CreateServiceData): Promise<CreateServiceResponse | null> => {
     try {
       console.log('🔄 Creating user service:', serviceData);
       const response = await post(API_ENDPOINTS.USER_SERVICES_CREATE, serviceData);
@@ -184,7 +189,12 @@ export const useUserServices = () => {
         console.log('✅ User service created:', response.data);
         // Recargar servicios después de crear uno nuevo
         await loadUserServices();
-        return response.data;
+        // Retornar la respuesta completa del servidor que incluye message e isAdmin
+        return {
+          ...response.data,
+          message: response.message,
+          isAdmin: (response as any).isAdmin
+        };
       } else {
         throw new Error(response.error || 'Failed to create service');
       }
