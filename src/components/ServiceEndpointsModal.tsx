@@ -11,7 +11,9 @@ import {
   Info,
   Loader2,
   Wifi,
-  Zap
+  Zap,
+  MonitorPlay,
+  AlertCircle
 } from 'lucide-react';
 import { useServiceValidation } from '../hooks/useServiceValidation';
 
@@ -620,6 +622,555 @@ sio.wait()`;
                 <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
                   <code>{websocketPythonExample}</code>
                 </pre>
+              </div>
+            </div>
+          </div>
+
+          {/* Widget HTML Integration */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <MonitorPlay className="w-5 h-5 mr-2 text-purple-600" />
+              Integración con Widget HTML
+            </h3>
+            
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-5 mb-6">
+              <div className="flex items-start">
+                <Info className="w-5 h-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-semibold text-purple-900 mb-2">
+                    Widget de Chat Listo para Usar
+                  </h4>
+                  <p className="text-sm text-purple-800 mb-3">
+                    Integra fácilmente un chat en tu sitio web con nuestro widget pre-construido. 
+                    Solo necesitas copiar el código HTML y configurar tu servicio.
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-purple-700">
+                    <Check className="w-4 h-4" />
+                    <span>Responsive y personalizable</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-purple-700">
+                    <Check className="w-4 h-4" />
+                    <span>WebSocket en tiempo real integrado</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-purple-700">
+                    <Check className="w-4 h-4" />
+                    <span>Sin dependencias externas pesadas</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Widget HTML Code */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 px-4 py-2 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">Widget HTML Completo</span>
+                  <span className="text-xs text-gray-500">(Copiar y pegar en tu sitio)</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(
+                    `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget - ${service.serviceName}</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 500px;
+            height: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-container {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .connection-status {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <div>
+                <div style="font-weight: 600; font-size: 16px;">${service.serviceName}</div>
+                <div class="connection-status" id="connectionStatus">Conectando...</div>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="message-content">
+                    ¡Hola! Soy ${service.assistantName}. ¿En qué puedo ayudarte hoy?
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="messageInput" 
+                placeholder="Escribe tu mensaje..."
+                onkeypress="handleKeyPress(event)"
+            >
+            <button class="send-button" onclick="sendMessage()" id="sendButton">
+                Enviar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN DEL SERVICIO
+        // ==========================================
+        const CONFIG = {
+            serviceId: '${service.serviceId}',
+            token: '${protectedToken || 'YOUR_PROTECTED_TOKEN'}',
+            wsUrl: '${wsBaseUrl}',
+            assistantName: '${service.assistantName}'
+        };
+
+        // ==========================================
+        // CONEXIÓN WEBSOCKET
+        // ==========================================
+        let socket;
+        let isConnected = false;
+        let threadId = null;
+
+        function connectWebSocket() {
+            console.log('🔌 Conectando a WebSocket...');
+            
+            socket = io(CONFIG.wsUrl, {
+                query: {
+                    serviceId: CONFIG.serviceId,
+                    token: CONFIG.token
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            // Evento: Conexión exitosa
+            socket.on('connect', () => {
+                console.log('✅ Conectado a WebSocket:', socket.id);
+                isConnected = true;
+                updateConnectionStatus('Conectado', true);
+            });
+
+            // Evento: Respuesta del asistente
+            socket.on('assistant_response', (data) => {
+                console.log('📨 Respuesta del asistente:', data);
+                removeTypingIndicator();
+                addMessage(data.response || data.data?.response, 'assistant');
+                
+                // Guardar threadId para mantener contexto
+                if (data.threadId || data.data?.threadId) {
+                    threadId = data.threadId || data.data.threadId;
+                }
+            });
+
+            // Evento: Desconexión
+            socket.on('disconnect', () => {
+                console.log('❌ Desconectado del WebSocket');
+                isConnected = false;
+                updateConnectionStatus('Desconectado', false);
+            });
+
+            // Evento: Error
+            socket.on('error', (error) => {
+                console.error('❌ Error en WebSocket:', error);
+                updateConnectionStatus('Error de conexión', false);
+            });
+
+            // Evento: Reconexión
+            socket.on('reconnect', (attemptNumber) => {
+                console.log(\`🔄 Reconectado después de \${attemptNumber} intentos\`);
+                isConnected = true;
+                updateConnectionStatus('Conectado', true);
+            });
+        }
+
+        // ==========================================
+        // FUNCIONES DE UI
+        // ==========================================
+        function updateConnectionStatus(status, connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            const indicator = document.getElementById('statusIndicator');
+            
+            statusElement.textContent = status;
+            indicator.style.background = connected ? '#4ade80' : '#ef4444';
+        }
+
+        function addMessage(text, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = \`message \${type}\`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll automático al último mensaje
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = \`
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            \`;
+            
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            if (!isConnected) {
+                alert('No estás conectado al servidor. Por favor, espera...');
+                return;
+            }
+
+            // Agregar mensaje del usuario a la UI
+            addMessage(message, 'user');
+            
+            // Mostrar indicador de "escribiendo..."
+            showTypingIndicator();
+            
+            // Enviar mensaje por WebSocket
+            socket.emit('user_message', {
+                message: message,
+                threadId: threadId
+            });
+            
+            // Limpiar input
+            input.value = '';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Iniciando widget de chat...');
+            console.log('📋 Configuración:', CONFIG);
+            connectWebSocket();
+        });
+
+        // Cerrar conexión al cerrar la página
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>`, 
+                    'widget-html'
+                  )}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('widget-html') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar Widget</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto max-h-96">
+                <code>{`<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat - ${service.serviceName}</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        /* Estilos del widget... */
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Widget de chat completo -->
+    </div>
+
+    <script>
+        const CONFIG = {
+            serviceId: '${service.serviceId}',
+            token: '${protectedToken || 'YOUR_PROTECTED_TOKEN'}',
+            wsUrl: '${wsBaseUrl}'
+        };
+
+        // Conexión WebSocket
+        const socket = io(CONFIG.wsUrl, {
+            query: {
+                serviceId: CONFIG.serviceId,
+                token: CONFIG.token
+            }
+        });
+
+        socket.on('assistant_response', (data) => {
+            // Mostrar respuesta en el chat
+            console.log('Respuesta:', data);
+        });
+        
+        // Ver código completo arriba ⬆️
+    </script>
+</body>
+</html>`}</code>
+              </pre>
+            </div>
+
+            {/* Instrucciones de Uso */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">1</div>
+                  <div>
+                    <h5 className="font-semibold text-blue-900 text-sm mb-1">Copiar el Código</h5>
+                    <p className="text-xs text-blue-800">
+                      Haz clic en "Copiar Widget" para obtener el HTML completo con tu configuración.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">2</div>
+                  <div>
+                    <h5 className="font-semibold text-green-900 text-sm mb-1">Crear Archivo HTML</h5>
+                    <p className="text-xs text-green-800">
+                      Guarda el código como <code className="bg-green-100 px-1 rounded">chat.html</code> en tu proyecto.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">3</div>
+                  <div>
+                    <h5 className="font-semibold text-purple-900 text-sm mb-1">Personalizar (Opcional)</h5>
+                    <p className="text-xs text-purple-800">
+                      Modifica los estilos CSS según tu marca y diseño.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-6 h-6 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">4</div>
+                  <div>
+                    <h5 className="font-semibold text-orange-900 text-sm mb-1">Probar y Publicar</h5>
+                    <p className="text-xs text-orange-800">
+                      Abre el archivo en tu navegador para probarlo, luego intégralo en tu sitio.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Advertencia de Token */}
+            <div className="mt-4 bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h5 className="font-semibold text-yellow-900 text-sm mb-1">
+                    ⚠️ Importante: Seguridad del Token
+                  </h5>
+                  <ul className="text-xs text-yellow-800 space-y-1">
+                    <li>• El widget ya incluye tu <strong>Token Protegido</strong> automáticamente</li>
+                    <li>• Este token es específico para el servicio <strong>${service.serviceName}</strong></li>
+                    <li>• No compartas este archivo con terceros si contiene información sensible</li>
+                    <li>• Para producción, considera inyectar el token desde el servidor</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
