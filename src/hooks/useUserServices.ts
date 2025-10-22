@@ -188,8 +188,8 @@ export const useUserServices = () => {
       
       if (response.success && response.data) {
         console.log('✅ User service created:', response.data);
-        // Recargar servicios después de crear uno nuevo
-        await loadUserServices();
+        // Recargar dashboard completo después de crear un servicio
+        await loadUserDashboard();
         // Retornar la respuesta completa del servidor que incluye message e isAdmin
         return {
           ...response.data,
@@ -205,7 +205,7 @@ export const useUserServices = () => {
       setError(errorMessage);
       return null;
     }
-  }, [post, loadUserServices]);
+  }, [post, loadUserDashboard]);
 
   // Actualizar servicio
   const updateService = useCallback(async (serviceId: string, updateData: UpdateServiceData): Promise<UserService | null> => {
@@ -215,8 +215,8 @@ export const useUserServices = () => {
       
       if (response.success && response.data) {
         console.log('✅ User service updated:', response.data);
-        // Recargar servicios después de actualizar
-        await loadUserServices();
+        // Recargar dashboard completo después de actualizar
+        await loadUserDashboard();
         return response.data;
       } else {
         throw new Error(response.error || 'Failed to update service');
@@ -227,7 +227,7 @@ export const useUserServices = () => {
       setError(errorMessage);
       return null;
     }
-  }, [put, loadUserServices]);
+  }, [put, loadUserDashboard]);
 
   // Eliminar servicio
   const deleteService = useCallback(async (serviceId: string): Promise<boolean> => {
@@ -237,8 +237,8 @@ export const useUserServices = () => {
       
       if (response.success) {
         console.log('✅ User service deleted successfully');
-        // Recargar servicios después de eliminar
-        await loadUserServices();
+        // Recargar dashboard completo después de eliminar
+        await loadUserDashboard();
         return true;
       } else {
         throw new Error(response.error || 'Failed to delete service');
@@ -249,7 +249,7 @@ export const useUserServices = () => {
       setError(errorMessage);
       return false;
     }
-  }, [deleteRequest, loadUserServices]);
+  }, [deleteRequest, loadUserDashboard]);
 
   // Chat con servicio
   const chatWithService = useCallback(async (serviceId: string, message: string, threadId?: string): Promise<ChatResponse | null> => {
