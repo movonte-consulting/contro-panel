@@ -9,6 +9,7 @@ import {
   Search,
   RefreshCw
 } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 interface ServiceValidation {
   id: number;
@@ -49,7 +50,7 @@ export const AdminServiceValidations: React.FC<AdminServiceValidationsProps> = (
   const loadValidations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/service-validation/pending', {
+      const response = await fetch(API_ENDPOINTS.SERVICE_VALIDATION_PENDING, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
           'Content-Type': 'application/json'
@@ -73,7 +74,7 @@ export const AdminServiceValidations: React.FC<AdminServiceValidationsProps> = (
   const approveValidation = async (validationId: number) => {
     try {
       setProcessing(validationId);
-      const response = await fetch(`/api/admin/service-validation/${validationId}/approve`, {
+      const response = await fetch(API_ENDPOINTS.SERVICE_VALIDATION_APPROVE(validationId.toString()), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
@@ -103,7 +104,7 @@ export const AdminServiceValidations: React.FC<AdminServiceValidationsProps> = (
   const rejectValidation = async (validationId: number) => {
     try {
       setProcessing(validationId);
-      const response = await fetch(`/api/admin/service-validation/${validationId}/reject`, {
+      const response = await fetch(API_ENDPOINTS.SERVICE_VALIDATION_REJECT(validationId.toString()), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
