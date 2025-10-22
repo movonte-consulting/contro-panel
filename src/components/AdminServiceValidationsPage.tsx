@@ -3,15 +3,12 @@ import { AdminServiceValidations } from './AdminServiceValidations';
 
 export const AdminServiceValidationsPage: React.FC = () => {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Service Validation Requests</h1>
-        <p className="text-gray-600">Review and approve service creation requests from users</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdminServiceValidations />
       </div>
-      
-      <AdminServiceValidations />
     </div>
   );
 };
 
-
+export default AdminServiceValidationsPage;

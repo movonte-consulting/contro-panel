@@ -5,15 +5,13 @@ import AssistantsList from './AssistantsList';
 import RecentActivity from './RecentActivity';
 import { UserServicesManager } from './UserServicesManager';
 import ChatKitWidget from './ChatKitWidget';
-import ApprovalNotifications from './ApprovalNotifications';
-import { MessageCircle, Bell } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { profile } = useProfile();
   const { activities } = useActivityContext();
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [showChat, setShowChat] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   return (
     <div className="space-y-8">
@@ -26,15 +24,6 @@ const Dashboard: React.FC = () => {
             className="w-12 h-12 mr-4"
           />
           <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
-          {profile?.role === 'admin' && (
-            <button
-              onClick={() => setShowNotifications(true)}
-              className="ml-4 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              title="Notificaciones de Aprobación"
-            >
-              <Bell className="w-6 h-6" />
-            </button>
-          )}
         </div>
         <p className="text-lg text-gray-600">
           Welcome to Movonte Administration Panel
@@ -110,12 +99,6 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       )}
-
-      {/* Approval Notifications Modal */}
-      <ApprovalNotifications
-        isOpen={showNotifications}
-        onClose={() => setShowNotifications(false)}
-      />
     </div>
   );
 };

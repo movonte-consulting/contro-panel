@@ -1,304 +1,415 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, XCircle, Globe, Calendar, User, RefreshCw, AlertTriangle } from 'lucide-react';
-import { useServiceValidation, type ServiceValidation } from '../hooks/useServiceValidation';
-import { useAuth } from '../hooks/useAuth';
+import { 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  User, 
+  Globe, 
+  MessageSquare,
+  Search,
+  RefreshCw
+} from 'lucide-react';
 
-export const AdminServiceValidations: React.FC = () => {
-  const { user, isLoading: authLoading } = useAuth();
-  const { getPendingValidations, approveValidation, rejectValidation, loading, error } = useServiceValidation();
+interface ServiceValidation {
+  id: number;
+  serviceName: string;
+  serviceDescription?: string;
+  websiteUrl: string;
+  requestedDomain: string;
+  status: 'pending' | 'approved' | 'rejected';
+  adminNotes?: string;
+  validatedBy?: number;
+  validatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: {
+    id: number;
+    username: string;
+    email: string;
+  };
+}
+
+interface AdminServiceValidationsProps {
+  onValidationUpdate?: () => void;
+}
+
+export const AdminServiceValidations: React.FC<AdminServiceValidationsProps> = ({ 
+  onValidationUpdate 
+}) => {
   const [validations, setValidations] = useState<ServiceValidation[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [processingId, setProcessingId] = useState<number | null>(null);
-  const [showRejectModal, setShowRejectModal] = useState<ServiceValidation | null>(null);
-  const [rejectNotes, setRejectNotes] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedValidation, setSelectedValidation] = useState<ServiceValidation | null>(null);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [processing, setProcessing] = useState<number | null>(null);
 
+  // Cargar solicitudes de validación
   const loadValidations = async () => {
     try {
-      setRefreshing(true);
-      const data = await getPendingValidations();
-      setValidations(data);
+      setLoading(true);
+      const response = await fetch('/api/admin/service-validation/pending', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar solicitudes');
+      }
+
+      const data = await response.json();
+      setValidations(data.data?.validations || []);
     } catch (err) {
-      console.error('Error loading validations:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
-      setRefreshing(false);
+      setLoading(false);
+    }
+  };
+
+  // Aprobar solicitud
+  const approveValidation = async (validationId: number) => {
+    try {
+      setProcessing(validationId);
+      const response = await fetch(`/api/admin/service-validation/${validationId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          adminNotes: adminNotes || 'Aprobado por administrador'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al aprobar solicitud');
+      }
+
+      await loadValidations();
+      setSelectedValidation(null);
+      setAdminNotes('');
+      onValidationUpdate?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al aprobar solicitud');
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  // Rechazar solicitud
+  const rejectValidation = async (validationId: number) => {
+    try {
+      setProcessing(validationId);
+      const response = await fetch(`/api/admin/service-validation/${validationId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          adminNotes: adminNotes || 'Rechazado por administrador'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al rechazar solicitud');
+      }
+
+      await loadValidations();
+      setSelectedValidation(null);
+      setAdminNotes('');
+      onValidationUpdate?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al rechazar solicitud');
+    } finally {
+      setProcessing(null);
     }
   };
 
   useEffect(() => {
-    // Solo cargar validaciones si el usuario está autenticado y no está cargando
-    if (!authLoading && user) {
-      loadValidations();
-    }
-  }, [authLoading, user]);
+    loadValidations();
+  }, []);
 
-  const handleApprove = async (validation: ServiceValidation) => {
-    try {
-      setProcessingId(validation.id);
-      await approveValidation(validation.id, 'Approved by administrator');
-      await loadValidations(); // Recargar la lista
-    } catch (err) {
-      console.error('Error approving validation:', err);
-    } finally {
-      setProcessingId(null);
-    }
-  };
+  // Filtrar validaciones
+  const filteredValidations = validations.filter(validation => {
+    const matchesFilter = filter === 'all' || validation.status === filter;
+    const matchesSearch = searchTerm === '' || 
+      validation.serviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      validation.user?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      validation.requestedDomain.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesFilter && matchesSearch;
+  });
 
-  const handleReject = async () => {
-    if (!showRejectModal || !rejectNotes.trim()) {
-      return;
-    }
-
-    try {
-      setProcessingId(showRejectModal.id);
-      await rejectValidation(showRejectModal.id, rejectNotes);
-      await loadValidations(); // Recargar la lista
-      setShowRejectModal(null);
-      setRejectNotes('');
-    } catch (err) {
-      console.error('Error rejecting validation:', err);
-    } finally {
-      setProcessingId(null);
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="w-4 h-4 text-yellow-500" />;
+      case 'approved':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'rejected':
+        return <XCircle className="w-4 h-4 text-red-500" />;
+      default:
+        return <Clock className="w-4 h-4 text-gray-500" />;
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pendiente';
+      case 'approved':
+        return 'Aprobado';
+      case 'rejected':
+        return 'Rechazado';
+      default:
+        return 'Desconocido';
+    }
   };
 
-  // Mostrar loading mientras se autentica el usuario
-  if (authLoading) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-center py-8">
-          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Authenticating user...</span>
-        </div>
-      </div>
-    );
-  }
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  // Verificar que el usuario esté autenticado
-  if (!user) {
+  if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="text-center py-8">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">User not authenticated</h3>
-          <p className="text-gray-600">Please log in to access this page</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading && validations.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-center py-8">
-          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Loading requests...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && validations.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="text-center py-8">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading requests</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={loadValidations}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (validations.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="text-center py-8">
-          <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No pending requests</h3>
-          <p className="text-gray-600">All validation requests have been processed.</p>
-        </div>
+      <div className="flex items-center justify-center p-8">
+        <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Cargando solicitudes...</span>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Pending Validation Requests</h2>
-              <p className="text-sm text-gray-600">{validations.length} pending request(s)</p>
-            </div>
-            <button
-              onClick={loadValidations}
-              disabled={refreshing}
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Solicitudes de Validación</h2>
+          <p className="text-gray-600">Gestiona las solicitudes de servicios de tus usuarios</p>
+        </div>
+        <button
+          onClick={loadValidations}
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Actualizar
+        </button>
+      </div>
+
+      {/* Filtros y búsqueda */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Buscar por servicio, usuario o dominio..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
         </div>
-
-        <div className="divide-y divide-gray-200">
-          {validations.map((validation) => (
-            <div key={validation.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-medium text-gray-900">{validation.serviceName}</h3>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                      <Clock className="h-4 w-4" />
-                      Pending
-                    </span>
-                  </div>
-
-                  {validation.serviceDescription && (
-                    <p className="text-gray-600 mb-3">{validation.serviceDescription}</p>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <User className="h-4 w-4" />
-                      <span className="font-medium">User:</span>
-                      <span>{validation.user?.username || 'N/A'}</span>
-                      <span className="text-gray-400">({validation.user?.email})</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="h-4 w-4" />
-                      <span className="font-medium">Requested:</span>
-                      <span>{formatDate(validation.createdAt)}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Globe className="h-4 w-4" />
-                      <span className="font-medium">Website:</span>
-                      <a 
-                        href={validation.websiteUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-700 underline"
-                      >
-                        {validation.websiteUrl}
-                      </a>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Globe className="h-4 w-4" />
-                      <span className="font-medium">CORS Domain:</span>
-                      <span className="font-mono text-gray-900">{validation.requestedDomain}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 ml-4">
-                  <button
-                    onClick={() => handleApprove(validation)}
-                    disabled={processingId === validation.id}
-                    className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {processingId === validation.id ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <CheckCircle className="h-4 w-4" />
-                    )}
-                    Approve
-                  </button>
-
-                  <button
-                    onClick={() => setShowRejectModal(validation)}
-                    disabled={processingId === validation.id}
-                    className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Reject
-                  </button>
-                </div>
-              </div>
-            </div>
+        <div className="flex gap-2">
+          {['all', 'pending', 'approved', 'rejected'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilter(status as any)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filter === status
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {status === 'all' ? 'Todas' : getStatusText(status)}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Modal de rechazo */}
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
+      {/* Lista de validaciones */}
+      <div className="bg-white rounded-lg shadow">
+        {filteredValidations.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>No hay solicitudes que coincidan con los filtros</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {filteredValidations.map((validation) => (
+              <div key={validation.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {validation.serviceName}
+                      </h3>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(validation.status)}`}>
+                        {getStatusIcon(validation.status)}
+                        {getStatusText(validation.status)}
+                      </span>
+                    </div>
+                    
+                    {validation.serviceDescription && (
+                      <p className="text-gray-600 mb-3">{validation.serviceDescription}</p>
+                    )}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          <strong>Usuario:</strong> {validation.user?.username} ({validation.user?.email})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          <strong>Dominio:</strong> {validation.requestedDomain}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>URL: {validation.websiteUrl}</span>
+                    </div>
+                    
+                    {validation.adminNotes && (
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-700">
+                          <strong>Notas del administrador:</strong> {validation.adminNotes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {validation.status === 'pending' && (
+                    <div className="flex gap-2 ml-4">
+                      <button
+                        onClick={() => setSelectedValidation(validation)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                      >
+                        Revisar
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Reject Request</h3>
-                <p className="text-sm text-gray-600">{showRejectModal.serviceName}</p>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de revisión */}
+      {selectedValidation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Revisar Solicitud: {selectedValidation.serviceName}
+                </h3>
+                <button
+                  onClick={() => setSelectedValidation(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
               </div>
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="rejectNotes" className="block text-sm font-medium text-gray-700 mb-2">
-                Rejection reason *
-              </label>
-              <textarea
-                id="rejectNotes"
-                value={rejectNotes}
-                onChange={(e) => setRejectNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                rows={4}
-                placeholder="Explain why this request is being rejected..."
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={handleReject}
-                disabled={!rejectNotes.trim() || processingId === showRejectModal.id}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {processingId === showRejectModal.id ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                    Rejecting...
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4" />
-                    Reject
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowRejectModal(null);
-                  setRejectNotes('');
-                }}
-                disabled={processingId === showRejectModal.id}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
+              
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Usuario
+                  </label>
+                  <p className="text-gray-900">{selectedValidation.user?.username} ({selectedValidation.user?.email})</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descripción del Servicio
+                  </label>
+                  <p className="text-gray-900">{selectedValidation.serviceDescription || 'Sin descripción'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    URL del Sitio Web
+                  </label>
+                  <p className="text-gray-900">{selectedValidation.websiteUrl}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Dominio Solicitado
+                  </label>
+                  <p className="text-gray-900">{selectedValidation.requestedDomain}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Notas del Administrador
+                  </label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="Agrega notas sobre tu decisión..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setSelectedValidation(null)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => rejectValidation(selectedValidation.id)}
+                  disabled={processing === selectedValidation.id}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {processing === selectedValidation.id ? 'Procesando...' : 'Rechazar'}
+                </button>
+                <button
+                  onClick={() => approveValidation(selectedValidation.id)}
+                  disabled={processing === selectedValidation.id}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  {processing === selectedValidation.id ? 'Procesando...' : 'Aprobar'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </>
+
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <XCircle className="w-5 h-5 text-red-500 mr-2" />
+            <span className="text-red-700">{error}</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
+
+export default AdminServiceValidations;
