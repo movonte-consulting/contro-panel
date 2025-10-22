@@ -48,6 +48,8 @@ export interface CreateServiceData {
   assistantId: string;
   assistantName: string;
   projectKey: string;
+  websiteUrl?: string;
+  requestedDomain?: string;
 }
 
 export interface UpdateServiceData {

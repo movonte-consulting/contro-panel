@@ -403,7 +403,14 @@ export const UserServicesManager: React.FC = () => {
 
   const handleCreateService = async (data: CreateServiceData, validationInfo?: ServiceValidationData) => {
     try {
-      const result = await createService(data);
+      // Combinar los datos del servicio con la información de validación
+      const serviceData = {
+        ...data,
+        websiteUrl: validationInfo?.websiteUrl,
+        requestedDomain: validationInfo?.requestedDomain
+      };
+      
+      const result = await createService(serviceData);
       if (result) {
         // Usar el mensaje del servidor que incluye información sobre admin
         const message = result.message || `Service '${data.serviceName}' created successfully`;
