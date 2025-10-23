@@ -8,6 +8,8 @@ import {
   Key, 
   MessageSquare,
   ExternalLink,
+  Clock,
+  RefreshCw,
   Info,
   Loader2,
   Wifi,
@@ -36,16 +38,22 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
   const [protectedToken, setProtectedToken] = useState<string>('');
   const [tokenLoading, setTokenLoading] = useState(false);
+  const [expirationHours, setExpirationHours] = useState<number>(24);
+  const [tokenInfo, setTokenInfo] = useState<{expirationHours?: number, expiresAt?: string}>({});
   const { generateProtectedToken } = useServiceValidation();
 
   // Generar token protegido cuando se abre el modal
   useEffect(() => {
     if (isOpen && !protectedToken) {
       setTokenLoading(true);
-      generateProtectedToken(service.serviceId)
+      generateProtectedToken(service.serviceId, expirationHours)
         .then(response => {
           if (response && response.protectedToken) {
             setProtectedToken(response.protectedToken);
+            setTokenInfo({
+              expirationHours: response.expirationHours,
+              expiresAt: response.expiresAt
+            });
           } else {
             console.warn('No se pudo obtener el token protegido del servicio');
           }
@@ -58,7 +66,7 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
           setTokenLoading(false);
         });
     }
-  }, [isOpen, service.serviceId, protectedToken, generateProtectedToken]);
+  }, [isOpen, service.serviceId, protectedToken, generateProtectedToken, expirationHours]);
 
   if (!isOpen) return null;
 
@@ -81,6 +89,27 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
       }, 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+    }
+  };
+
+  const regenerateToken = async () => {
+    setTokenLoading(true);
+    setProtectedToken('');
+    setTokenInfo({});
+    
+    try {
+      const response = await generateProtectedToken(service.serviceId, expirationHours);
+      if (response && response.protectedToken) {
+        setProtectedToken(response.protectedToken);
+        setTokenInfo({
+          expirationHours: response.expirationHours,
+          expiresAt: response.expiresAt
+        });
+      }
+    } catch (error) {
+      console.error('Error regenerating protected token:', error);
+    } finally {
+      setTokenLoading(false);
     }
   };
 
@@ -237,6 +266,53 @@ sio.wait()`;
             </div>
           </div>
 
+          {/* Token Expiration Configuration */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <Clock className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-blue-900 mb-2">
+                  Configuración de Expiración del Token
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-blue-800 mb-1">
+                      Tiempo de expiración
+                    </label>
+                    <select
+                      value={expirationHours}
+                      onChange={(e) => setExpirationHours(Number(e.target.value))}
+                      className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    >
+                      <option value={1}>1 hora</option>
+                      <option value={6}>6 horas</option>
+                      <option value={12}>12 horas</option>
+                      <option value={24}>24 horas (1 día)</option>
+                      <option value={72}>72 horas (3 días)</option>
+                      <option value={168}>168 horas (1 semana)</option>
+                      <option value={720}>720 horas (30 días)</option>
+                    </select>
+                    <p className="text-xs text-blue-600 mt-1">
+                      Selecciona cuánto tiempo debe durar el token protegido
+                    </p>
+                  </div>
+                  <button
+                    onClick={regenerateToken}
+                    disabled={tokenLoading}
+                    className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-sm"
+                  >
+                    {tokenLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4" />
+                    )}
+                    <span>{tokenLoading ? 'Generando...' : 'Regenerar Token'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Protected Token Section */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
@@ -271,9 +347,21 @@ sio.wait()`;
                         </>
                       )}
                     </button>
-                    <p className="text-xs text-green-700">
-                      Este token es específico para este servicio y no expone tus credenciales reales.
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-xs text-green-700">
+                        Este token es específico para este servicio y no expone tus credenciales reales.
+                      </p>
+                      {tokenInfo.expirationHours && (
+                        <p className="text-xs text-green-600">
+                          ⏰ Expira en: {tokenInfo.expirationHours} horas
+                          {tokenInfo.expiresAt && (
+                            <span className="block">
+                              📅 Fecha de expiración: {new Date(tokenInfo.expiresAt).toLocaleString()}
+                            </span>
+                          )}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">

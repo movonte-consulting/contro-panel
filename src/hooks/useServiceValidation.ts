@@ -32,6 +32,8 @@ export interface ProtectedTokenResponse {
   protectedToken: string;
   serviceId: string;
   userId: number;
+  expirationHours?: number;
+  expiresAt?: string;
   message: string;
 }
 
@@ -132,14 +134,19 @@ export const useServiceValidation = () => {
   }, [post]);
 
   // Generar token protegido para servicio
-  const generateProtectedToken = useCallback(async (serviceId: string): Promise<ProtectedTokenResponse> => {
+  const generateProtectedToken = useCallback(async (serviceId: string, expirationHours?: number): Promise<ProtectedTokenResponse> => {
     setLoading(true);
     setError(null);
 
     try {
+      const requestData: any = { serviceId };
+      if (expirationHours !== undefined) {
+        requestData.expirationHours = expirationHours;
+      }
+
       const response = await post<ProtectedTokenResponse>(
         API_ENDPOINTS.SERVICE_VALIDATION_PROTECTED_TOKEN,
-        { serviceId }
+        requestData
       );
       
       if (!response.success) {
