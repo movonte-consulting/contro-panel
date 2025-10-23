@@ -74,6 +74,9 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
   const wsBaseUrl = 'wss://chat.movonte.com';
   const chatEndpoint = `${baseUrl}/api/user/services/${service.serviceId}/chat`;
   const statusEndpoint = `${baseUrl}/api/user/services/${service.serviceId}/status`;
+  const createTicketEndpoint = `${baseUrl}/api/service/create-ticket`;
+  const connectEndpoint = `${baseUrl}/api/widget/connect`;
+  const sendMessageEndpoint = `${baseUrl}/api/widget/send-message`;
   const wsEndpoint = `${wsBaseUrl}/socket.io/?serviceId=${service.serviceId}&token=${protectedToken || 'YOUR_PROTECTED_TOKEN'}`;
 
   const copyToClipboard = async (text: string, itemId: string) => {
@@ -466,6 +469,105 @@ sio.wait()`;
               </p>
             </div>
 
+            {/* Create Ticket Endpoint */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <MonitorPlay className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Crear Ticket</h3>
+                  <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">POST</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(createTicketEndpoint, 'create-ticket-endpoint')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('create-ticket-endpoint') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
+                {createTicketEndpoint}
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Crea un nuevo ticket en Jira usando el proyecto configurado para este servicio.
+              </p>
+            </div>
+
+            {/* Connect to Ticket Endpoint */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-indigo-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Conectar a Ticket</h3>
+                  <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">POST</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(connectEndpoint, 'connect-endpoint')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('connect-endpoint') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
+                {connectEndpoint}
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Conecta el widget a un ticket existente para recibir notificaciones y respuestas.
+              </p>
+            </div>
+
+            {/* Send Message to Ticket Endpoint */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="w-5 h-5 text-teal-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Enviar Mensaje a Ticket</h3>
+                  <span className="bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full">POST</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(sendMessageEndpoint, 'send-message-endpoint')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('send-message-endpoint') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3 font-mono text-sm text-gray-800 break-all">
+                {sendMessageEndpoint}
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Envía mensajes a un ticket específico y recibe respuestas de la IA.
+              </p>
+            </div>
+
             {/* WebSocket Endpoint */}
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
@@ -746,6 +848,150 @@ sio.wait()`;
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Ticket Examples */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 px-4 py-2 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">Crear Ticket</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(`curl -X POST "${createTicketEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
+  -d '{
+    "customerInfo": {
+      "name": "Usuario Test",
+      "email": "test@example.com",
+      "company": "Test Company"
+    },
+    "serviceId": "${service.serviceId}"
+  }'`, 'create-ticket-curl')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('create-ticket-curl') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
+                <code>{`curl -X POST "${createTicketEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
+  -d '{
+    "customerInfo": {
+      "name": "Usuario Test",
+      "email": "test@example.com",
+      "company": "Test Company"
+    },
+    "serviceId": "${service.serviceId}"
+  }'`}</code>
+              </pre>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 px-4 py-2 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">Conectar a Ticket</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(`curl -X POST "${connectEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
+  -d '{
+    "issueKey": "TEST-123",
+    "customerInfo": {
+      "name": "Usuario Test",
+      "email": "test@example.com",
+      "company": "Test Company"
+    }
+  }'`, 'connect-ticket-curl')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('connect-ticket-curl') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
+                <code>{`curl -X POST "${connectEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
+  -d '{
+    "issueKey": "TEST-123",
+    "customerInfo": {
+      "name": "Usuario Test",
+      "email": "test@example.com",
+      "company": "Test Company"
+    }
+  }'`}</code>
+              </pre>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="bg-gray-100 px-4 py-2 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">Enviar Mensaje a Ticket</span>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(`curl -X POST "${sendMessageEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
+  -d '{
+    "message": "Hola, necesito ayuda con este ticket",
+    "issueKey": "TEST-123",
+    "customerInfo": {
+      "name": "Usuario Test",
+      "email": "test@example.com",
+      "company": "Test Company"
+    }
+  }'`, 'send-message-curl')}
+                  className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {copiedItems.has('send-message-curl') ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span className="text-green-600">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="bg-gray-900 text-gray-100 p-4 text-sm overflow-x-auto">
+                <code>{`curl -X POST "${sendMessageEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${protectedToken || 'YOUR_PROTECTED_TOKEN'}" \\
+  -d '{
+    "message": "Hola, necesito ayuda con este ticket",
+    "issueKey": "TEST-123",
+    "customerInfo": {
+      "name": "Usuario Test",
+      "email": "test@example.com",
+      "company": "Test Company"
+    }
+  }'`}</code>
+              </pre>
             </div>
 
             {/* Widget HTML Code */}
