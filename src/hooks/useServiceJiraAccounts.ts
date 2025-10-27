@@ -41,20 +41,20 @@ export function useServiceJiraAccounts() {
     setError(null);
     
     try {
-      const response = await get<{ success: boolean; data: ServiceJiraAccount | null; message?: string }>(
+      const response = await get<{ data: ServiceJiraAccount | null }>(
         `/api/service/${serviceId}/jira-accounts`
       );
 
-      if (response && response.success) {
-        return response.data || null;
+      if (response && response.success && response.data) {
+        return response.data.data;
       } else {
-        throw new Error(response?.message || 'Error al obtener cuentas de Jira');
+        return null;
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Error al obtener cuentas de Jira';
       setError(errorMessage);
       console.error('Error getting service Jira accounts:', err);
-      throw new Error(errorMessage);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -71,15 +71,15 @@ export function useServiceJiraAccounts() {
     setError(null);
     
     try {
-      const response = await post<{ success: boolean; data: ServiceJiraAccount; message?: string }>(
+      const response = await post<{ data: ServiceJiraAccount }>(
         `/api/service/${serviceId}/jira-accounts`,
         accountData
       );
 
       if (response && response.success && response.data) {
-        return response.data;
+        return response.data.data;
       } else {
-        throw new Error(response?.message || 'Error al guardar cuentas de Jira');
+        throw new Error(response?.message || response?.error || 'Error al guardar cuentas de Jira');
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Error al guardar cuentas de Jira';
