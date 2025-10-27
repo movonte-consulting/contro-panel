@@ -29,7 +29,7 @@ export interface ServiceJiraAccountInput {
 }
 
 export function useServiceJiraAccounts() {
-  const { get, post, put, del } = useApi();
+  const { get, post, delete: del } = useApi();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,10 +45,10 @@ export function useServiceJiraAccounts() {
         `/api/service/${serviceId}/jira-accounts`
       );
 
-      if (response.success) {
-        return response.data;
+      if (response && response.success) {
+        return response.data || null;
       } else {
-        throw new Error(response.message || 'Error al obtener cuentas de Jira');
+        throw new Error(response?.message || 'Error al obtener cuentas de Jira');
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Error al obtener cuentas de Jira';
@@ -76,10 +76,10 @@ export function useServiceJiraAccounts() {
         accountData
       );
 
-      if (response.success) {
+      if (response && response.success && response.data) {
         return response.data;
       } else {
-        throw new Error(response.message || 'Error al guardar cuentas de Jira');
+        throw new Error(response?.message || 'Error al guardar cuentas de Jira');
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Error al guardar cuentas de Jira';
