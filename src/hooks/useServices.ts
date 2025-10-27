@@ -47,28 +47,40 @@ export const useServices = (): UseServicesReturn => {
       const endpoint = isAdmin ? API_ENDPOINTS.DASHBOARD : API_ENDPOINTS.USER_SERVICES_LIST;
       
       console.log(`🔄 Loading ${isAdmin ? 'admin' : 'user'} services...`);
-      const response = await get<{ data: ServiceConfiguration[] }>(endpoint);
+      console.log(`🔍 Endpoint: ${endpoint}`);
+      
+      const response = await get<any>(endpoint);
       
       console.log(`📊 ${isAdmin ? 'Admin' : 'User'} services response received:`, response);
       
       if (response.success && response.data) {
-        const services = response.data;
-        console.log(`📊 ${isAdmin ? 'Admin' : 'User'} services data received:`, services);
+        console.log(`📦 Raw response.data:`, response.data);
+        console.log(`📦 Is response.data an array?`, Array.isArray(response.data));
         
         // Para admin, los datos vienen del dashboard con estructura diferente
         let servicesArray: ServiceConfiguration[] = [];
         if (isAdmin) {
           // Admin: response.data.serviceConfigurations
-          servicesArray = (services as any)?.serviceConfigurations || [];
+          servicesArray = response.data.serviceConfigurations || [];
+          console.log(`👑 Admin services array:`, servicesArray);
         } else {
-          // Usuario: response.data (array directo o con propiedad data)
-          servicesArray = Array.isArray(services) ? services : (services as any)?.data || [];
+          // Usuario: response.data es directamente el array
+          if (Array.isArray(response.data)) {
+            servicesArray = response.data;
+          } else if (response.data.serviceConfigurations) {
+            // Por si acaso viene con la misma estructura que admin
+            servicesArray = response.data.serviceConfigurations;
+          } else {
+            servicesArray = [];
+          }
+          console.log(`👤 User services array:`, servicesArray);
         }
         
         setServices(servicesArray);
         
         console.log(`✅ ${isAdmin ? 'Admin' : 'User'} services loaded:`, {
-          count: servicesArray.length
+          count: servicesArray.length,
+          services: servicesArray
         });
       } else {
         console.error(`❌ ${isAdmin ? 'Admin' : 'User'} services response failed:`, response);
