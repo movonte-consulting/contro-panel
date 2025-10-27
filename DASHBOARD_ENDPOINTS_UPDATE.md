@@ -87,3 +87,4 @@ El modal ahora muestra:
 - ✅ **Funcionalidad completa** de tickets
 
 ¡El modal de instrucciones ahora está actualizado con los endpoints correctos! 🎉
+

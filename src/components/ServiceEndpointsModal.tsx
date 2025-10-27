@@ -15,9 +15,13 @@ import {
   Wifi,
   Zap,
   MonitorPlay,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  Save,
+  User
 } from 'lucide-react';
 import { useServiceValidation } from '../hooks/useServiceValidation';
+import { useServiceJiraAccounts } from '../hooks/useServiceJiraAccounts';
 
 interface ServiceEndpointsModalProps {
   isOpen: boolean;
@@ -41,6 +45,18 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
   const [expirationHours, setExpirationHours] = useState<number>(24);
   const [tokenInfo, setTokenInfo] = useState<{expirationHours?: number, expiresAt?: string}>({});
   const { generateProtectedToken } = useServiceValidation();
+  
+  // Jira Accounts States
+  const [showJiraAccountsConfig, setShowJiraAccountsConfig] = useState(false);
+  const [jiraAccountsLoading, setJiraAccountsLoading] = useState(false);
+  const [jiraAccountsSaving, setJiraAccountsSaving] = useState(false);
+  const [assistantJiraEmail, setAssistantJiraEmail] = useState('');
+  const [assistantJiraToken, setAssistantJiraToken] = useState('');
+  const [assistantJiraUrl, setAssistantJiraUrl] = useState('https://movonte.atlassian.net');
+  const [widgetJiraEmail, setWidgetJiraEmail] = useState('');
+  const [widgetJiraToken, setWidgetJiraToken] = useState('');
+  const [widgetJiraUrl, setWidgetJiraUrl] = useState('https://movonte.atlassian.net');
+  const { getServiceJiraAccounts, upsertServiceJiraAccounts } = useServiceJiraAccounts();
 
   // Generar token protegido cuando se abre el modal
   useEffect(() => {
@@ -67,6 +83,54 @@ const ServiceEndpointsModal: React.FC<ServiceEndpointsModalProps> = ({
         });
     }
   }, [isOpen, service.serviceId, protectedToken, generateProtectedToken, expirationHours]);
+
+  // Cargar cuentas de Jira cuando se abre el modal
+  useEffect(() => {
+    if (isOpen) {
+      setJiraAccountsLoading(true);
+      getServiceJiraAccounts(service.serviceId)
+        .then(accounts => {
+          if (accounts) {
+            setAssistantJiraEmail(accounts.assistantJiraEmail || '');
+            setAssistantJiraUrl(accounts.assistantJiraUrl || 'https://movonte.atlassian.net');
+            setWidgetJiraEmail(accounts.widgetJiraEmail || '');
+            setWidgetJiraUrl(accounts.widgetJiraUrl || 'https://movonte.atlassian.net');
+          }
+        })
+        .catch(error => {
+          console.error('Error loading Jira accounts:', error);
+        })
+        .finally(() => {
+          setJiraAccountsLoading(false);
+        });
+    }
+  }, [isOpen, service.serviceId, getServiceJiraAccounts]);
+
+  // Función para guardar cuentas de Jira
+  const handleSaveJiraAccounts = async () => {
+    setJiraAccountsSaving(true);
+    try {
+      await upsertServiceJiraAccounts(service.serviceId, {
+        assistantJiraEmail: assistantJiraEmail || undefined,
+        assistantJiraToken: assistantJiraToken || undefined,
+        assistantJiraUrl: assistantJiraUrl || undefined,
+        widgetJiraEmail: widgetJiraEmail || undefined,
+        widgetJiraToken: widgetJiraToken || undefined,
+        widgetJiraUrl: widgetJiraUrl || undefined,
+        isActive: true
+      });
+      alert('✅ Cuentas de Jira guardadas exitosamente');
+      setShowJiraAccountsConfig(false);
+      // Limpiar los tokens después de guardar por seguridad
+      setAssistantJiraToken('');
+      setWidgetJiraToken('');
+    } catch (error) {
+      console.error('Error saving Jira accounts:', error);
+      alert('❌ Error al guardar cuentas de Jira');
+    } finally {
+      setJiraAccountsSaving(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -240,16 +304,184 @@ sio.wait()`;
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowJiraAccountsConfig(!showJiraAccountsConfig)}
+              className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              title="Configurar Cuentas de Jira"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="text-sm">Cuentas Jira</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+          {/* Jira Accounts Configuration */}
+          {showJiraAccountsConfig && (
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <User className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-purple-900">
+                    Configuración de Cuentas de Jira
+                  </h3>
+                </div>
+                {jiraAccountsLoading && <Loader2 className="w-5 h-5 animate-spin text-purple-600" />}
+              </div>
+              
+              <p className="text-sm text-purple-800 mb-4">
+                Configura cuentas de Jira alternativas para este servicio. Si no configuras ninguna, se usarán tus credenciales principales.
+              </p>
+
+              <div className="space-y-6">
+                {/* Assistant Jira Account */}
+                <div className="bg-white rounded-lg p-4 border border-purple-200">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                    <Settings className="w-4 h-4 mr-2 text-indigo-600" />
+                    Cuenta del Asistente
+                  </h4>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Esta cuenta se usará para responder automáticamente a los tickets
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email de Jira
+                      </label>
+                      <input
+                        type="email"
+                        value={assistantJiraEmail}
+                        onChange={(e) => setAssistantJiraEmail(e.target.value)}
+                        placeholder="assistant@movonte.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Token de Jira
+                      </label>
+                      <input
+                        type="password"
+                        value={assistantJiraToken}
+                        onChange={(e) => setAssistantJiraToken(e.target.value)}
+                        placeholder="••••••••••••••••"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Solo necesitas ingresar el token si deseas actualizarlo
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        URL de Jira
+                      </label>
+                      <input
+                        type="url"
+                        value={assistantJiraUrl}
+                        onChange={(e) => setAssistantJiraUrl(e.target.value)}
+                        placeholder="https://movonte.atlassian.net"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Widget Jira Account */}
+                <div className="bg-white rounded-lg p-4 border border-purple-200">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                    <MessageSquare className="w-4 h-4 mr-2 text-teal-600" />
+                    Cuenta del Widget
+                  </h4>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Esta cuenta se usará para interacciones del widget con Jira
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email de Jira
+                      </label>
+                      <input
+                        type="email"
+                        value={widgetJiraEmail}
+                        onChange={(e) => setWidgetJiraEmail(e.target.value)}
+                        placeholder="widget@movonte.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Token de Jira
+                      </label>
+                      <input
+                        type="password"
+                        value={widgetJiraToken}
+                        onChange={(e) => setWidgetJiraToken(e.target.value)}
+                        placeholder="••••••••••••••••"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Solo necesitas ingresar el token si deseas actualizarlo
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        URL de Jira
+                      </label>
+                      <input
+                        type="url"
+                        value={widgetJiraUrl}
+                        onChange={(e) => setWidgetJiraUrl(e.target.value)}
+                        placeholder="https://movonte.atlassian.net"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Save Button */}
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setShowJiraAccountsConfig(false)}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveJiraAccounts}
+                    disabled={jiraAccountsSaving}
+                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {jiraAccountsSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Guardando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>Guardar Cuentas</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Info Section */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
