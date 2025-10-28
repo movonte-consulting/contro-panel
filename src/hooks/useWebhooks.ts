@@ -17,8 +17,8 @@ interface SavedWebhook {
   userId: number;
   serviceId?: string;
   serviceName?: string;
-  jiraProjectKey?: string;
   assistantId?: string;
+  token?: string;
   name: string;
   url: string;
   description?: string;
@@ -52,8 +52,8 @@ interface UseWebhooksReturn {
     url: string;
     description?: string;
     serviceId?: string;
-    jiraProjectKey?: string;
     assistantId?: string;
+    token?: string;
     filterEnabled?: boolean;
     filterCondition?: string;
     filterValue?: string;
@@ -63,8 +63,8 @@ interface UseWebhooksReturn {
     url?: string;
     description?: string;
     serviceId?: string;
-    jiraProjectKey?: string;
     assistantId?: string;
+    token?: string;
     isEnabled?: boolean;
     filterEnabled?: boolean;
     filterCondition?: string;

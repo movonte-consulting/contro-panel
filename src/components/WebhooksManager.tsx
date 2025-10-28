@@ -3,7 +3,6 @@ import { Loader2, Webhook, CheckCircle, XCircle, AlertCircle, Play, Save, Trash2
 import { useWebhooks } from '../hooks/useWebhooks';
 import { useAssistants } from '../hooks/useAssistants';
 import { useServices } from '../hooks/useServices';
-import { useProjects } from '../hooks/useProjects';
 
 const WebhooksManager: React.FC = () => {
   const { 
@@ -22,7 +21,6 @@ const WebhooksManager: React.FC = () => {
   
   const { assistants } = useAssistants();
   const { services } = useServices();
-  const { projects } = useProjects();
   
   const [isUpdating, setIsUpdating] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -41,7 +39,7 @@ const WebhooksManager: React.FC = () => {
   const [newWebhookName, setNewWebhookName] = useState('');
   const [newWebhookDescription, setNewWebhookDescription] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
-  const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState('');
+  const [webhookToken, setWebhookToken] = useState('');
   const [showNewWebhookFields, setShowNewWebhookFields] = useState(false);
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [editingWebhookId, setEditingWebhookId] = useState<number | null>(null);
@@ -172,8 +170,8 @@ const WebhooksManager: React.FC = () => {
         url: webhookUrl,
         description: newWebhookDescription,
         serviceId: selectedServiceId || undefined,
-        jiraProjectKey: selectedJiraProjectKey || undefined,
         assistantId: selectedAssistant || undefined,
+        token: webhookToken || undefined,
         filterEnabled: filterEnabled,
         filterCondition: filterEnabled ? 'response_value' : undefined,
         filterValue: filterEnabled ? 'Yes' : undefined
@@ -245,7 +243,7 @@ const WebhooksManager: React.FC = () => {
         setNewWebhookName(webhook.name);
         setNewWebhookDescription(webhook.description || '');
         setSelectedServiceId(webhook.serviceId || '');
-        setSelectedJiraProjectKey(webhook.jiraProjectKey || '');
+        setWebhookToken(webhook.token || '');
         setSelectedAssistant(webhook.assistantId || '');
         setFilterEnabled(webhook.filterEnabled || false);
         setEditingWebhookId(webhook.id);
@@ -270,7 +268,7 @@ const WebhooksManager: React.FC = () => {
     setNewWebhookName('');
     setNewWebhookDescription('');
     setSelectedServiceId('');
-    setSelectedJiraProjectKey('');
+    setWebhookToken('');
     setSelectedSavedWebhook('');
     setEditingWebhookId(null);
     setShowDeleteButton(false);
@@ -342,17 +340,16 @@ const WebhooksManager: React.FC = () => {
             <option value="">Choose a saved webhook...</option>
             {savedWebhooks.map((webhook) => {
               const serviceName = webhook.serviceName || 'All Services';
-              const projectKey = webhook.jiraProjectKey || 'All Projects';
               const statusIcon = webhook.isEnabled ? '✅' : '❌';
               return (
                 <option key={webhook.id} value={webhook.id.toString()}>
-                  {statusIcon} {webhook.name} | {serviceName} → {projectKey}
+                  {statusIcon} {webhook.name} | {serviceName}
                 </option>
               );
             })}
           </select>
           <small className="text-gray-500 text-xs mt-1">
-            Select from previously saved webhooks. Each can be linked to specific services and projects.
+            Select from previously saved webhooks. Each can be linked to specific services.
           </small>
         </div>
 
@@ -396,14 +393,14 @@ const WebhooksManager: React.FC = () => {
                             <span className="font-medium">Service:</span> {webhook.serviceName}
                           </div>
                         )}
-                        {webhook.jiraProjectKey && (
+                        {webhook.token && (
                           <div className="flex items-center gap-1">
-                            <Link className="w-3 h-3 text-purple-500" />
-                            <span className="font-medium">Project:</span> {webhook.jiraProjectKey}
+                            <Link className="w-3 h-3 text-green-500" />
+                            <span className="font-medium">Token:</span> {webhook.token.substring(0, 8)}...
                           </div>
                         )}
-                        {!webhook.serviceId && !webhook.jiraProjectKey && (
-                          <div className="text-gray-500 italic">Global webhook (all services & projects)</div>
+                        {!webhook.serviceId && (
+                          <div className="text-gray-500 italic">Global webhook (all services)</div>
                         )}
                       </div>
                     </div>
@@ -483,25 +480,20 @@ const WebhooksManager: React.FC = () => {
             </div>
 
             {/* Jira Project Selection - NEW */}
-            <div className="form-group bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div className="form-group bg-green-50 p-4 rounded-lg border border-green-200">
               <div className="flex items-center mb-2">
-                <Link className="w-4 h-4 mr-2 text-purple-600" />
-                <label className="block text-sm font-medium text-gray-700">Jira Project Destination (Optional)</label>
+                <Link className="w-4 h-4 mr-2 text-green-600" />
+                <label className="block text-sm font-medium text-gray-700">Authentication Token (Optional)</label>
               </div>
-              <select
-                value={selectedJiraProjectKey}
-                onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white"
-              >
-                <option value="">All Projects</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.key}>
-                    {project.name} ({project.key})
-                  </option>
-                ))}
-              </select>
+              <input
+                type="text"
+                value={webhookToken}
+                onChange={(e) => setWebhookToken(e.target.value)}
+                placeholder="Enter webhook authentication token"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              />
               <small className="text-gray-600 text-xs mt-1 block">
-                Select the Jira project where this webhook will send tickets. Leave empty to use for all projects.
+                Optional token for webhook authentication. Will be sent as Authorization header.
               </small>
             </div>
           </>
