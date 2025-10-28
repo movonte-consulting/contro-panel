@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Loader2, Webhook, CheckCircle, XCircle, AlertCircle, Play, Save, Trash2, Plus, Filter } from 'lucide-react';
+import { Loader2, Webhook, CheckCircle, XCircle, AlertCircle, Play, Save, Trash2, Plus, Filter, Link } from 'lucide-react';
 import { useWebhooks } from '../hooks/useWebhooks';
 import { useAssistants } from '../hooks/useAssistants';
+import { useServices } from '../hooks/useServices';
+import { useProjects } from '../hooks/useProjects';
 
 const WebhooksManager: React.FC = () => {
   const { 
@@ -14,10 +16,13 @@ const WebhooksManager: React.FC = () => {
     disableWebhook, 
     setWebhookFilter,
     saveWebhook,
+    updateWebhook,
     deleteWebhook
   } = useWebhooks();
   
   const { assistants } = useAssistants();
+  const { services } = useServices();
+  const { projects } = useProjects();
   
   const [isUpdating, setIsUpdating] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -35,8 +40,11 @@ const WebhooksManager: React.FC = () => {
   // Estados para webhook guardado
   const [newWebhookName, setNewWebhookName] = useState('');
   const [newWebhookDescription, setNewWebhookDescription] = useState('');
+  const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState('');
   const [showNewWebhookFields, setShowNewWebhookFields] = useState(false);
   const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const [editingWebhookId, setEditingWebhookId] = useState<number | null>(null);
   
   // Estados para test
   const [testResult, setTestResult] = useState<any>(null);
@@ -159,18 +167,36 @@ const WebhooksManager: React.FC = () => {
     setErrorMessage('');
 
     try {
-      const success = await saveWebhook(newWebhookName, webhookUrl, newWebhookDescription);
+      const webhookData = {
+        name: newWebhookName,
+        url: webhookUrl,
+        description: newWebhookDescription,
+        serviceId: selectedServiceId || undefined,
+        jiraProjectKey: selectedJiraProjectKey || undefined,
+        assistantId: selectedAssistant || undefined,
+        filterEnabled: filterEnabled,
+        filterCondition: filterEnabled ? 'response_value' : undefined,
+        filterValue: filterEnabled ? 'Yes' : undefined
+      };
+
+      let success;
+      if (editingWebhookId) {
+        success = await updateWebhook(editingWebhookId, webhookData);
+        setSuccessMessage(success ? 'Webhook updated successfully' : 'Error updating webhook');
+      } else {
+        success = await saveWebhook(webhookData);
+        setSuccessMessage(success ? 'Webhook saved successfully' : 'Error saving webhook');
+      }
+
       if (success) {
-        setSuccessMessage('Webhook saved successfully');
         clearWebhookForm();
         handleHideNewWebhookFields();
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
-        setErrorMessage('Error saving webhook');
         setTimeout(() => setErrorMessage(''), 5000);
       }
     } catch (err) {
-      setErrorMessage('Error saving webhook');
+      setErrorMessage(editingWebhookId ? 'Error updating webhook' : 'Error saving webhook');
       setTimeout(() => setErrorMessage(''), 5000);
     } finally {
       setIsUpdating(false);
@@ -218,8 +244,13 @@ const WebhooksManager: React.FC = () => {
         setWebhookUrl(webhook.url);
         setNewWebhookName(webhook.name);
         setNewWebhookDescription(webhook.description || '');
+        setSelectedServiceId(webhook.serviceId || '');
+        setSelectedJiraProjectKey(webhook.jiraProjectKey || '');
+        setSelectedAssistant(webhook.assistantId || '');
+        setFilterEnabled(webhook.filterEnabled || false);
+        setEditingWebhookId(webhook.id);
         setShowDeleteButton(true);
-        handleHideNewWebhookFields();
+        setShowNewWebhookFields(true);
       }
     } else {
       clearWebhookForm();
@@ -238,7 +269,10 @@ const WebhooksManager: React.FC = () => {
     setWebhookUrl('');
     setNewWebhookName('');
     setNewWebhookDescription('');
+    setSelectedServiceId('');
+    setSelectedJiraProjectKey('');
     setSelectedSavedWebhook('');
+    setEditingWebhookId(null);
     setShowDeleteButton(false);
   };
 
@@ -297,21 +331,94 @@ const WebhooksManager: React.FC = () => {
       <div className="space-y-6">
         {/* Select Saved Webhook */}
         <div className="form-group">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Saved Webhook</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Saved Webhooks ({savedWebhooks.length})
+          </label>
           <select 
             value={selectedSavedWebhook}
             onChange={(e) => handleSavedWebhookChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Choose a saved webhook...</option>
-            {savedWebhooks.map((webhook) => (
-              <option key={webhook.id} value={webhook.id.toString()}>
-                {webhook.name} - {webhook.url.substring(0, 50)}...
-              </option>
-            ))}
+            {savedWebhooks.map((webhook) => {
+              const serviceName = webhook.serviceName || 'All Services';
+              const projectKey = webhook.jiraProjectKey || 'All Projects';
+              const statusIcon = webhook.isEnabled ? '✅' : '❌';
+              return (
+                <option key={webhook.id} value={webhook.id.toString()}>
+                  {statusIcon} {webhook.name} | {serviceName} → {projectKey}
+                </option>
+              );
+            })}
           </select>
-          <small className="text-gray-500 text-xs mt-1">Select from previously saved webhook URLs</small>
+          <small className="text-gray-500 text-xs mt-1">
+            Select from previously saved webhooks. Each can be linked to specific services and projects.
+          </small>
         </div>
+
+        {/* Webhooks List Display */}
+        {savedWebhooks.length > 0 && (
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <Webhook className="w-4 h-4 mr-2" />
+              Your Parallel Webhooks
+            </h3>
+            <div className="space-y-2">
+              {savedWebhooks.map((webhook) => (
+                <div 
+                  key={webhook.id}
+                  className={`p-3 rounded-md border ${
+                    webhook.isEnabled 
+                      ? 'bg-white border-green-200' 
+                      : 'bg-gray-100 border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-sm font-medium ${
+                          webhook.isEnabled ? 'text-gray-900' : 'text-gray-500'
+                        }`}>
+                          {webhook.name}
+                        </span>
+                        <span className={`px-2 py-0.5 text-xs rounded-full ${
+                          webhook.isEnabled 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {webhook.isEnabled ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        {webhook.serviceId && webhook.serviceName && (
+                          <div className="flex items-center gap-1">
+                            <Link className="w-3 h-3 text-blue-500" />
+                            <span className="font-medium">Service:</span> {webhook.serviceName}
+                          </div>
+                        )}
+                        {webhook.jiraProjectKey && (
+                          <div className="flex items-center gap-1">
+                            <Link className="w-3 h-3 text-purple-500" />
+                            <span className="font-medium">Project:</span> {webhook.jiraProjectKey}
+                          </div>
+                        )}
+                        {!webhook.serviceId && !webhook.jiraProjectKey && (
+                          <div className="text-gray-500 italic">Global webhook (all services & projects)</div>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleSavedWebhookChange(webhook.id.toString())}
+                      className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Webhook URL */}
         <div className="form-group">
@@ -350,6 +457,52 @@ const WebhooksManager: React.FC = () => {
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
+            </div>
+
+            {/* Service Selection - NEW */}
+            <div className="form-group bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center mb-2">
+                <Link className="w-4 h-4 mr-2 text-blue-600" />
+                <label className="block text-sm font-medium text-gray-700">Link to Service (Optional)</label>
+              </div>
+              <select
+                value={selectedServiceId}
+                onChange={(e) => setSelectedServiceId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+              >
+                <option value="">All Services (Global Webhook)</option>
+                {services.map((service: any) => (
+                  <option key={service.serviceId} value={service.serviceId}>
+                    {service.serviceName || service.serviceId} ({service.serviceId})
+                  </option>
+                ))}
+              </select>
+              <small className="text-gray-600 text-xs mt-1 block">
+                Select a specific service to link this webhook. Leave empty for a global webhook that works for all services.
+              </small>
+            </div>
+
+            {/* Jira Project Selection - NEW */}
+            <div className="form-group bg-purple-50 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center mb-2">
+                <Link className="w-4 h-4 mr-2 text-purple-600" />
+                <label className="block text-sm font-medium text-gray-700">Jira Project Destination (Optional)</label>
+              </div>
+              <select
+                value={selectedJiraProjectKey}
+                onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white"
+              >
+                <option value="">All Projects</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.key}>
+                    {project.name} ({project.key})
+                  </option>
+                ))}
+              </select>
+              <small className="text-gray-600 text-xs mt-1 block">
+                Select the Jira project where this webhook will send tickets. Leave empty to use for all projects.
+              </small>
             </div>
           </>
         )}
@@ -458,7 +611,7 @@ const WebhooksManager: React.FC = () => {
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 <Save className="w-4 h-4 mr-2" />
-                Save Webhook
+                {editingWebhookId ? 'Update Webhook' : 'Save Webhook'}
               </button>
               <button
                 onClick={() => {

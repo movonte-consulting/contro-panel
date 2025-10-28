@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
   USER_WEBHOOK_FILTER: `${API_BASE_URL}/api/user/webhook/filter`,
   USER_WEBHOOKS_SAVED: `${API_BASE_URL}/api/user/webhooks/saved`,
   USER_WEBHOOKS_SAVE: `${API_BASE_URL}/api/user/webhooks/save`,
+  USER_WEBHOOKS_UPDATE: (id: string) => `${API_BASE_URL}/api/user/webhooks/${id}`,
   USER_WEBHOOKS_DELETE: (id: string) => `${API_BASE_URL}/api/user/webhooks/${id}`,
   
   // Service Validation (Validación de Servicios)

@@ -5,10 +5,12 @@ import { API_ENDPOINTS } from '../config/api';
 
 interface ServiceConfiguration {
   serviceId: string;
+  serviceName: string;
   assistantId: string;
   assistantName: string;
   isActive: boolean;
   lastUpdated: string;
+  configuration?: any;
 }
 
 // interface ServicesData {

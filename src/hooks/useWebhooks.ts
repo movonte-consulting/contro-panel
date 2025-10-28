@@ -14,11 +14,20 @@ interface WebhookStatus {
 
 interface SavedWebhook {
   id: number;
+  userId: number;
+  serviceId?: string;
+  serviceName?: string;
+  jiraProjectKey?: string;
+  assistantId?: string;
   name: string;
   url: string;
-  description: string;
-  isActive: boolean;
+  description?: string;
+  isEnabled: boolean;
+  filterEnabled: boolean;
+  filterCondition?: string;
+  filterValue?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 interface WebhookTestResult {
@@ -38,7 +47,29 @@ interface UseWebhooksReturn {
   testWebhook: () => Promise<WebhookTestResult | null>;
   disableWebhook: () => Promise<boolean>;
   setWebhookFilter: (filterEnabled: boolean, filterCondition?: string, filterValue?: string) => Promise<boolean>;
-  saveWebhook: (name: string, url: string, description?: string) => Promise<boolean>;
+  saveWebhook: (data: {
+    name: string;
+    url: string;
+    description?: string;
+    serviceId?: string;
+    jiraProjectKey?: string;
+    assistantId?: string;
+    filterEnabled?: boolean;
+    filterCondition?: string;
+    filterValue?: string;
+  }) => Promise<boolean>;
+  updateWebhook: (id: number, data: {
+    name?: string;
+    url?: string;
+    description?: string;
+    serviceId?: string;
+    jiraProjectKey?: string;
+    assistantId?: string;
+    isEnabled?: boolean;
+    filterEnabled?: boolean;
+    filterCondition?: string;
+    filterValue?: string;
+  }) => Promise<boolean>;
   deleteWebhook: (id: number) => Promise<boolean>;
 }
 
@@ -47,7 +78,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
   const [savedWebhooks, setSavedWebhooks] = useState<SavedWebhook[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { get, post, delete: deleteRequest } = useApi();
+  const { get, post, put, delete: deleteRequest } = useApi();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const fetchWebhookStatus = useCallback(async () => {
@@ -229,8 +260,18 @@ export const useWebhooks = (): UseWebhooksReturn => {
     }
   }, [post, fetchWebhookStatus, user?.role]);
 
-  const saveWebhook = useCallback(async (name: string, url: string, description?: string): Promise<boolean> => {
-    if (!name || !url) {
+  const saveWebhook = useCallback(async (data: {
+    name: string;
+    url: string;
+    description?: string;
+    serviceId?: string;
+    jiraProjectKey?: string;
+    assistantId?: string;
+    filterEnabled?: boolean;
+    filterCondition?: string;
+    filterValue?: string;
+  }): Promise<boolean> => {
+    if (!data.name || !data.url) {
       setError('name y url son requeridos');
       return false;
     }
@@ -242,15 +283,25 @@ export const useWebhooks = (): UseWebhooksReturn => {
       const isAdmin = user?.role === 'admin';
       const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOKS_SAVE : API_ENDPOINTS.USER_WEBHOOKS_SAVE;
       
-      console.log('🔄 Saving webhook:', name, isAdmin ? '(admin)' : '(user)');
+      console.log('🔄 Saving webhook:', data.name, isAdmin ? '(admin)' : '(user)', {
+        serviceId: data.serviceId,
+        jiraProjectKey: data.jiraProjectKey
+      });
+      
       const response = await post(endpoint, {
-        name,
-        url,
-        description
+        name: data.name,
+        url: data.url,
+        description: data.description,
+        serviceId: data.serviceId,
+        jiraProjectKey: data.jiraProjectKey,
+        assistantId: data.assistantId,
+        filterEnabled: data.filterEnabled,
+        filterCondition: data.filterCondition,
+        filterValue: data.filterValue
       });
       
       if (response.success) {
-        console.log('✅ Webhook saved:', name);
+        console.log('✅ Webhook saved:', data.name);
         await fetchSavedWebhooks();
         return true;
       } else {
@@ -263,6 +314,45 @@ export const useWebhooks = (): UseWebhooksReturn => {
       return false;
     }
   }, [post, fetchSavedWebhooks, user?.role]);
+
+  const updateWebhook = useCallback(async (id: number, data: {
+    name?: string;
+    url?: string;
+    description?: string;
+    serviceId?: string;
+    jiraProjectKey?: string;
+    assistantId?: string;
+    isEnabled?: boolean;
+    filterEnabled?: boolean;
+    filterCondition?: string;
+    filterValue?: string;
+  }): Promise<boolean> => {
+    try {
+      setError(null);
+      
+      // Usar endpoints diferentes según el rol del usuario
+      const isAdmin = user?.role === 'admin';
+      const endpoint = isAdmin 
+        ? `${API_ENDPOINTS.WEBHOOKS_SAVE}/${id}` 
+        : API_ENDPOINTS.USER_WEBHOOKS_UPDATE(id.toString());
+      
+      console.log('🔄 Updating webhook:', id, isAdmin ? '(admin)' : '(user)');
+      const response = await put(endpoint, data);
+      
+      if (response.success) {
+        console.log('✅ Webhook updated:', id);
+        await fetchSavedWebhooks();
+        return true;
+      } else {
+        setError(response.error || 'Error al actualizar el webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error updating webhook:', err);
+      setError('Error de conexión al actualizar el webhook');
+      return false;
+    }
+  }, [put, fetchSavedWebhooks, user?.role]);
 
   const deleteWebhook = useCallback(async (id: number): Promise<boolean> => {
     try {
@@ -315,6 +405,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
     disableWebhook,
     setWebhookFilter,
     saveWebhook,
+    updateWebhook,
     deleteWebhook
   };
 };
