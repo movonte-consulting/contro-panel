@@ -265,7 +265,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
     url: string;
     description?: string;
     serviceId?: string;
-    jiraProjectKey?: string;
+    token?: string;
     assistantId?: string;
     filterEnabled?: boolean;
     filterCondition?: string;
@@ -285,7 +285,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
       
       console.log('🔄 Saving webhook:', data.name, isAdmin ? '(admin)' : '(user)', {
         serviceId: data.serviceId,
-        jiraProjectKey: data.jiraProjectKey
+        token: data.token
       });
       
       const response = await post(endpoint, {
@@ -293,7 +293,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
         url: data.url,
         description: data.description,
         serviceId: data.serviceId,
-        jiraProjectKey: data.jiraProjectKey,
+        token: data.token,
         assistantId: data.assistantId,
         filterEnabled: data.filterEnabled,
         filterCondition: data.filterCondition,
@@ -320,7 +320,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
     url?: string;
     description?: string;
     serviceId?: string;
-    jiraProjectKey?: string;
+    token?: string;
     assistantId?: string;
     isEnabled?: boolean;
     filterEnabled?: boolean;
