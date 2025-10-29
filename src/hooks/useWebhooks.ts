@@ -79,7 +79,7 @@ export const useWebhooks = (mode: 'user' | 'admin' = 'user'): UseWebhooksReturn 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { get, post, put, delete: deleteRequest } = useApi();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const isAdminMode = mode === 'admin';
 
@@ -251,7 +251,7 @@ export const useWebhooks = (mode: 'user' | 'admin' = 'user'): UseWebhooksReturn 
   const updateWebhook = useCallback(async (id: number, data: { name?: string; url?: string; description?: string; serviceId?: string; token?: string; assistantId?: string; isEnabled?: boolean; filterEnabled?: boolean; filterCondition?: string; filterValue?: string; }): Promise<boolean> => {
     try {
       setError(null);
-      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_UPDATE?.(id.toString()) ?? `${API_ENDPOINTS.WEBHOOKS_SAVE}/${id}` : API_ENDPOINTS.USER_WEBHOOKS_UPDATE(id.toString());
+      const endpoint = isAdminMode ? `${API_ENDPOINTS.WEBHOOKS_SAVE}/${id}` : API_ENDPOINTS.USER_WEBHOOKS_UPDATE(id.toString());
       console.log('🔄 Updating webhook:', id, isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await put(endpoint, data);
       if (response.success) {
