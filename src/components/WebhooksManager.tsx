@@ -17,7 +17,7 @@ const WebhooksManager: React.FC = () => {
     saveWebhook,
     updateWebhook,
     deleteWebhook
-  } = useWebhooks();
+  } = useWebhooks('user');
   
   const { assistants } = useAssistants();
   const { services } = useServices();

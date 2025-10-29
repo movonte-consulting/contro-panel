@@ -73,13 +73,15 @@ interface UseWebhooksReturn {
   deleteWebhook: (id: number) => Promise<boolean>;
 }
 
-export const useWebhooks = (): UseWebhooksReturn => {
+export const useWebhooks = (mode: 'user' | 'admin' = 'user'): UseWebhooksReturn => {
   const [webhookStatus, setWebhookStatus] = useState<WebhookStatus | null>(null);
   const [savedWebhooks, setSavedWebhooks] = useState<SavedWebhook[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { get, post, put, delete: deleteRequest } = useApi();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+
+  const isAdminMode = mode === 'admin';
 
   const fetchWebhookStatus = useCallback(async () => {
     if (!isAuthenticated) {
@@ -89,14 +91,9 @@ export const useWebhooks = (): UseWebhooksReturn => {
 
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOK_STATUS : API_ENDPOINTS.USER_WEBHOOK_STATUS;
-      
-      console.log('🔄 Loading webhook status...', isAdmin ? '(admin)' : '(user)');
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_STATUS : API_ENDPOINTS.USER_WEBHOOK_STATUS;
+      console.log('🔄 Loading webhook status...', isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await get<WebhookStatus>(endpoint);
-      
       if (response.success && response.data) {
         setWebhookStatus(response.data);
         console.log('✅ Webhook status loaded:', response.data);
@@ -109,7 +106,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al obtener el estado del webhook');
       setWebhookStatus(null);
     }
-  }, [isAuthenticated, user?.role]);
+  }, [isAuthenticated, isAdminMode]);
 
   const fetchSavedWebhooks = useCallback(async () => {
     if (!isAuthenticated) {
@@ -118,14 +115,9 @@ export const useWebhooks = (): UseWebhooksReturn => {
 
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOKS_SAVED : API_ENDPOINTS.USER_WEBHOOKS_SAVED;
-      
-      console.log('🔄 Loading saved webhooks...', isAdmin ? '(admin)' : '(user)');
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_SAVED : API_ENDPOINTS.USER_WEBHOOKS_SAVED;
+      console.log('🔄 Loading saved webhooks...', isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await get<{ webhooks: SavedWebhook[] }>(endpoint);
-      
       if (response.success && response.data) {
         setSavedWebhooks(response.data.webhooks || []);
         console.log('✅ Saved webhooks loaded:', response.data.webhooks?.length || 0);
@@ -138,27 +130,18 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al obtener los webhooks guardados');
       setSavedWebhooks([]);
     }
-  }, [isAuthenticated, user?.role]);
+  }, [isAuthenticated, isAdminMode]);
 
   const configureWebhook = useCallback(async (webhookUrl: string, assistantId: string): Promise<boolean> => {
     if (!webhookUrl || !assistantId) {
       setError('Se requiere la URL del webhook y el ID del asistente');
       return false;
     }
-
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOK_CONFIGURE : API_ENDPOINTS.USER_WEBHOOK_CONFIGURE;
-      
-      console.log('🔄 Configuring webhook:', webhookUrl, isAdmin ? '(admin)' : '(user)');
-      const response = await post(endpoint, {
-        webhookUrl,
-        assistantId
-      });
-      
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_CONFIGURE : API_ENDPOINTS.USER_WEBHOOK_CONFIGURE;
+      console.log('🔄 Configuring webhook:', webhookUrl, isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await post(endpoint, { webhookUrl, assistantId });
       if (response.success) {
         console.log('✅ Webhook configured:', webhookUrl);
         await fetchWebhookStatus();
@@ -172,19 +155,14 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al configurar el webhook');
       return false;
     }
-  }, [post, fetchWebhookStatus, user?.role]);
+  }, [post, fetchWebhookStatus, isAdminMode]);
 
   const testWebhook = useCallback(async (): Promise<WebhookTestResult | null> => {
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOK_TEST : API_ENDPOINTS.USER_WEBHOOK_TEST;
-      
-      console.log('🔄 Testing webhook...', isAdmin ? '(admin)' : '(user)');
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_TEST : API_ENDPOINTS.USER_WEBHOOK_TEST;
+      console.log('🔄 Testing webhook...', isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await post<WebhookTestResult>(endpoint);
-      
       if (response.success && response.data) {
         console.log('✅ Webhook tested:', response.data);
         return response.data;
@@ -197,19 +175,14 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al probar el webhook');
       return null;
     }
-  }, [post, user?.role]);
+  }, [post, isAdminMode]);
 
   const disableWebhook = useCallback(async (): Promise<boolean> => {
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOK_DISABLE : API_ENDPOINTS.USER_WEBHOOK_DISABLE;
-      
-      console.log('🔄 Disabling webhook...', isAdmin ? '(admin)' : '(user)');
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_DISABLE : API_ENDPOINTS.USER_WEBHOOK_DISABLE;
+      console.log('🔄 Disabling webhook...', isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await post(endpoint);
-      
       if (response.success) {
         console.log('✅ Webhook disabled');
         await fetchWebhookStatus();
@@ -223,28 +196,18 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al deshabilitar el webhook');
       return false;
     }
-  }, [post, fetchWebhookStatus, user?.role]);
+  }, [post, fetchWebhookStatus, isAdminMode]);
 
   const setWebhookFilter = useCallback(async (filterEnabled: boolean, filterCondition?: string, filterValue?: string): Promise<boolean> => {
     if (filterEnabled && (!filterCondition || !filterValue)) {
       setError('filterCondition y filterValue son requeridos cuando filterEnabled es true');
       return false;
     }
-
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOK_FILTER : API_ENDPOINTS.USER_WEBHOOK_FILTER;
-      
-      console.log('🔄 Setting webhook filter...', isAdmin ? '(admin)' : '(user)');
-      const response = await post(endpoint, {
-        filterEnabled,
-        filterCondition,
-        filterValue
-      });
-      
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_FILTER : API_ENDPOINTS.USER_WEBHOOK_FILTER;
+      console.log('🔄 Setting webhook filter...', isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await post(endpoint, { filterEnabled, filterCondition, filterValue });
       if (response.success) {
         console.log('✅ Webhook filter set');
         await fetchWebhookStatus();
@@ -258,48 +221,18 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al configurar el filtro del webhook');
       return false;
     }
-  }, [post, fetchWebhookStatus, user?.role]);
+  }, [post, fetchWebhookStatus, isAdminMode]);
 
-  const saveWebhook = useCallback(async (data: {
-    name: string;
-    url: string;
-    description?: string;
-    serviceId?: string;
-    token?: string;
-    assistantId?: string;
-    filterEnabled?: boolean;
-    filterCondition?: string;
-    filterValue?: string;
-  }): Promise<boolean> => {
+  const saveWebhook = useCallback(async (data: { name: string; url: string; description?: string; serviceId?: string; token?: string; assistantId?: string; filterEnabled?: boolean; filterCondition?: string; filterValue?: string; }): Promise<boolean> => {
     if (!data.name || !data.url) {
       setError('name y url son requeridos');
       return false;
     }
-
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOKS_SAVE : API_ENDPOINTS.USER_WEBHOOKS_SAVE;
-      
-      console.log('🔄 Saving webhook:', data.name, isAdmin ? '(admin)' : '(user)', {
-        serviceId: data.serviceId,
-        token: data.token
-      });
-      
-      const response = await post(endpoint, {
-        name: data.name,
-        url: data.url,
-        description: data.description,
-        serviceId: data.serviceId,
-        token: data.token,
-        assistantId: data.assistantId,
-        filterEnabled: data.filterEnabled,
-        filterCondition: data.filterCondition,
-        filterValue: data.filterValue
-      });
-      
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_SAVE : API_ENDPOINTS.USER_WEBHOOKS_SAVE;
+      console.log('🔄 Saving webhook:', data.name, isAdminMode ? '(admin mode)' : '(user mode)', { serviceId: data.serviceId, token: data.token });
+      const response = await post(endpoint, { name: data.name, url: data.url, description: data.description, serviceId: data.serviceId, token: data.token, assistantId: data.assistantId, filterEnabled: data.filterEnabled, filterCondition: data.filterCondition, filterValue: data.filterValue });
       if (response.success) {
         console.log('✅ Webhook saved:', data.name);
         await fetchSavedWebhooks();
@@ -313,32 +246,14 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al guardar el webhook');
       return false;
     }
-  }, [post, fetchSavedWebhooks, user?.role]);
+  }, [post, fetchSavedWebhooks, isAdminMode]);
 
-  const updateWebhook = useCallback(async (id: number, data: {
-    name?: string;
-    url?: string;
-    description?: string;
-    serviceId?: string;
-    token?: string;
-    assistantId?: string;
-    isEnabled?: boolean;
-    filterEnabled?: boolean;
-    filterCondition?: string;
-    filterValue?: string;
-  }): Promise<boolean> => {
+  const updateWebhook = useCallback(async (id: number, data: { name?: string; url?: string; description?: string; serviceId?: string; token?: string; assistantId?: string; isEnabled?: boolean; filterEnabled?: boolean; filterCondition?: string; filterValue?: string; }): Promise<boolean> => {
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin 
-        ? `${API_ENDPOINTS.WEBHOOKS_SAVE}/${id}` 
-        : API_ENDPOINTS.USER_WEBHOOKS_UPDATE(id.toString());
-      
-      console.log('🔄 Updating webhook:', id, isAdmin ? '(admin)' : '(user)');
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_UPDATE?.(id.toString()) ?? `${API_ENDPOINTS.WEBHOOKS_SAVE}/${id}` : API_ENDPOINTS.USER_WEBHOOKS_UPDATE(id.toString());
+      console.log('🔄 Updating webhook:', id, isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await put(endpoint, data);
-      
       if (response.success) {
         console.log('✅ Webhook updated:', id);
         await fetchSavedWebhooks();
@@ -352,19 +267,14 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al actualizar el webhook');
       return false;
     }
-  }, [put, fetchSavedWebhooks, user?.role]);
+  }, [put, fetchSavedWebhooks, isAdminMode]);
 
   const deleteWebhook = useCallback(async (id: number): Promise<boolean> => {
     try {
       setError(null);
-      
-      // Usar endpoints diferentes según el rol del usuario
-      const isAdmin = user?.role === 'admin';
-      const endpoint = isAdmin ? API_ENDPOINTS.WEBHOOKS_DELETE(id.toString()) : API_ENDPOINTS.USER_WEBHOOKS_DELETE(id.toString());
-      
-      console.log('🔄 Deleting webhook:', id, isAdmin ? '(admin)' : '(user)');
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_DELETE(id.toString()) : API_ENDPOINTS.USER_WEBHOOKS_DELETE(id.toString());
+      console.log('🔄 Deleting webhook:', id, isAdminMode ? '(admin mode)' : '(user mode)');
       const response = await deleteRequest(endpoint);
-      
       if (response.success) {
         console.log('✅ Webhook deleted:', id);
         await fetchSavedWebhooks();
@@ -378,7 +288,7 @@ export const useWebhooks = (): UseWebhooksReturn => {
       setError('Error de conexión al eliminar el webhook');
       return false;
     }
-  }, [deleteRequest, fetchSavedWebhooks, user?.role]);
+  }, [deleteRequest, fetchSavedWebhooks, isAdminMode]);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
