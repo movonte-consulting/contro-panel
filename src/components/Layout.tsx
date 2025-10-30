@@ -78,23 +78,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-700 flex-shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <img 
-                src="/favicons/favicon-32x32.png" 
-                alt="Movonte Logo" 
-                className="w-10 h-10 rounded-lg"
-              />
-              {(profile?.organizationLogo || user?.organizationLogo) && (
-                <>
-                  <span className="text-gray-500 text-lg">×</span>
-                  <img 
-                    src={profile?.organizationLogo || user?.organizationLogo} 
-                    alt="Organization Logo" 
-                    className="w-10 h-10 rounded-lg object-cover border border-gray-600"
-                  />
-                </>
-              )}
-            </div>
+            <img 
+              src="/favicons/favicon-32x32.png" 
+              alt="Movonte Logo" 
+              className="w-10 h-10 rounded-lg"
+            />
             <span className="text-xl font-bold text-white">Movonte</span>
           </div>
           <button

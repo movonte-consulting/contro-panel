@@ -19,7 +19,6 @@ interface UserProfile {
   role: string;
   permissions: UserPermissions;
   lastLogin: string;
-  organizationLogo?: string;
   createdAt: string;
 }
 
