@@ -31,6 +31,7 @@ export interface UserService {
     adminApprovedAt?: string;
     projectKey?: string;
     disable_tickets_state?: string[];
+    disabled_tickets?: string[];
   };
 }
 
@@ -60,6 +61,7 @@ export interface UpdateServiceData {
   configuration?: {
     projectKey?: string;
     disable_tickets_state?: string[];
+    disabled_tickets?: string[];
     [key: string]: any;
   };
 }

@@ -395,6 +395,8 @@ export const UserServicesManager: React.FC = () => {
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [isLoadingStatuses, setIsLoadingStatuses] = useState<boolean>(false);
+  const [disabledTicketsList, setDisabledTicketsList] = useState<string[]>([]);
+  const [newTicketKey, setNewTicketKey] = useState<string>('');
   const [createdService, setCreatedService] = useState<{
     serviceId: string;
     serviceName: string;
@@ -488,6 +490,8 @@ export const UserServicesManager: React.FC = () => {
     });
     setSelectedProjectKey(service.configuration?.projectKey || '');
     setSelectedStatuses(service.configuration?.disable_tickets_state || []);
+    setDisabledTicketsList(service.configuration?.disabled_tickets || []);
+    setNewTicketKey('');
     setShowProjectConfigModal(true);
   };
 
@@ -497,7 +501,8 @@ export const UserServicesManager: React.FC = () => {
       await updateService(selectedServiceForConfig.serviceId, {
         configuration: {
           projectKey: selectedProjectKey,
-          disable_tickets_state: selectedStatuses
+          disable_tickets_state: selectedStatuses,
+          disabled_tickets: disabledTicketsList
         }
       });
       setSuccessMessage(`Configuration saved for "${selectedServiceForConfig.serviceName}"`);
@@ -507,11 +512,26 @@ export const UserServicesManager: React.FC = () => {
       setAvailableStatuses([]);
       setSelectedStatuses([]);
       setSelectedProjectKey('');
+      setDisabledTicketsList([]);
+      setNewTicketKey('');
     } catch (error) {
       console.error('Error saving configuration:', error);
       setErrorMessage('Failed to save configuration');
       setTimeout(() => setErrorMessage(null), 5000);
     }
+  };
+
+  const handleAddDisabledTicket = () => {
+    if (!newTicketKey.trim()) return;
+    const ticketKey = newTicketKey.trim().toUpperCase();
+    if (!disabledTicketsList.includes(ticketKey)) {
+      setDisabledTicketsList(prev => [...prev, ticketKey]);
+      setNewTicketKey('');
+    }
+  };
+
+  const handleRemoveDisabledTicket = (ticketKey: string) => {
+    setDisabledTicketsList(prev => prev.filter(k => k !== ticketKey));
   };
 
   React.useEffect(() => {
@@ -838,6 +858,51 @@ export const UserServicesManager: React.FC = () => {
               )}
               <p className="text-xs text-gray-500 mt-2">When a ticket is in any of these states, the AI will not respond for this service.</p>
             </div>
+
+            {/* Disabled Tickets Section */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Disabled Tickets (AI will omit responses)
+              </label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={newTicketKey}
+                  onChange={(e) => setNewTicketKey(e.target.value.toUpperCase())}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddDisabledTicket()}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="e.g., TI-123"
+                />
+                <button
+                  onClick={handleAddDisabledTicket}
+                  disabled={!newTicketKey.trim()}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add
+                </button>
+              </div>
+              {disabledTicketsList.length > 0 ? (
+                <div className="max-h-32 overflow-auto border rounded p-2 space-y-1">
+                  {disabledTicketsList.map((ticketKey) => (
+                    <div key={ticketKey} className="flex items-center justify-between bg-red-50 border border-red-200 rounded px-2 py-1">
+                      <span className="text-sm font-medium text-gray-900">{ticketKey}</span>
+                      <button
+                        onClick={() => handleRemoveDisabledTicket(ticketKey)}
+                        className="text-red-600 hover:text-red-800 transition-colors"
+                        title="Remove ticket"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 text-center py-2 border rounded bg-gray-50">
+                  No disabled tickets
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-2">Specific tickets that will be ignored by the AI for this service.</p>
+            </div>
             
             <div className="flex justify-end space-x-3">
               <button
@@ -847,6 +912,8 @@ export const UserServicesManager: React.FC = () => {
                   setAvailableStatuses([]);
                   setSelectedStatuses([]);
                   setSelectedProjectKey('');
+                  setDisabledTicketsList([]);
+                  setNewTicketKey('');
                 }}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
