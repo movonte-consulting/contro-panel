@@ -18,6 +18,7 @@ interface UserData {
   lastLogin: string;
   isInitialSetupComplete: boolean;
   organizationLogo?: string;
+  jiraUrl?: string;
 }
 
 interface AuthState {

@@ -20,6 +20,8 @@ interface UserProfile {
   permissions: UserPermissions;
   lastLogin: string;
   createdAt: string;
+  jiraUrl?: string;
+  organizationLogo?: string;
 }
 
 interface UseProfileReturn {

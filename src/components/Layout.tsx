@@ -104,7 +104,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   alt="Organization Logo"
                   className="w-10 h-10 rounded bg-white object-contain"
                 />
-                <span className="text-gray-300 text-sm">Organization</span>
+                <span className="text-gray-300 text-sm">
+                  {(() => {
+                    const raw = (profile as any)?.jiraUrl || (user as any)?.jiraUrl;
+                    if (!raw) return 'Organization';
+                    try {
+                      const u = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
+                      return u.hostname;
+                    } catch {
+                      return raw;
+                    }
+                  })()}
+                </span>
               </div>
             ) : (
               <div>
