@@ -7,6 +7,7 @@ interface SetupFormData {
   jiraUrl: string;
   jiraToken: string;
   openaiToken: string;
+  organizationLogo?: string; // base64 string
 }
 
 interface ValidationResult {
@@ -89,11 +90,17 @@ export const useInitialSetup = (): UseInitialSetupReturn => {
 
     try {
       console.log('🔍 Completing setup with URL:', API_ENDPOINTS.USER_SETUP_COMPLETE);
-      const response = await post(API_ENDPOINTS.USER_SETUP_COMPLETE, {
+      const payload: any = {
         jiraUrl: formData.jiraUrl,
         jiraToken: formData.jiraToken,
         openaiToken: formData.openaiToken
-      });
+      };
+      const normalizedJiraUrl = (formData.jiraUrl || '').trim().toLowerCase();
+      if (normalizedJiraUrl !== 'https://movonte.atlassian.net' && formData.organizationLogo) {
+        payload.organizationLogo = formData.organizationLogo;
+      }
+
+      const response = await post(API_ENDPOINTS.USER_SETUP_COMPLETE, payload);
 
       if (response.success) {
         setSuccess('🎉 Configuración completada exitosamente!');

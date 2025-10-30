@@ -9,6 +9,7 @@ interface SetupFormData {
   jiraUrl: string;
   jiraToken: string;
   openaiToken: string;
+  organizationLogo?: string; // base64
 }
 
 const InitialSetup: React.FC = () => {
@@ -30,6 +31,7 @@ const InitialSetup: React.FC = () => {
     jiraToken: '',
     openaiToken: ''
   });
+  const [logoPreview, setLogoPreview] = useState<string>('');
   
   const [showJiraToken, setShowJiraToken] = useState(false);
   const [showOpenaiToken, setShowOpenaiToken] = useState(false);
@@ -54,6 +56,22 @@ const InitialSetup: React.FC = () => {
     if (error || success) {
       clearMessages();
     }
+  };
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor sube una imagen válida');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setFormData(prev => ({ ...prev, organizationLogo: base64 }));
+      setLogoPreview(base64);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleValidateTokens = async () => {
@@ -247,7 +265,26 @@ const InitialSetup: React.FC = () => {
               </p>
             </div>
 
-            {/* Validation Results */}
+          {/* Organization Logo upload (only if Jira URL is not movonte domain) */}
+          {formData.jiraUrl.trim().toLowerCase() !== 'https://movonte.atlassian.net' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Organization Logo (optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {logoPreview && (
+                <div className="mt-3">
+                  <img src={logoPreview} alt="Logo preview" className="h-16 object-contain" />
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-1">Se guardará en tu perfil como logo de organización</p>
+            </div>
+          )}
+
+          {/* Validation Results */}
             {validationResult && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h4 className="text-sm font-semibold text-gray-900 mb-3">Validation Results</h4>
