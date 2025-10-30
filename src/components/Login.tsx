@@ -27,8 +27,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [organizationLogo, setOrganizationLogo] = useState<string | null>(null);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  
 
   // Redirigir si ya está autenticado (solo al cargar el componente)
   useEffect(() => {
@@ -112,9 +111,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   const handleLogoUpload = async (logoUrl: string) => {
-    // Solo guardar en el estado local para preview
-    setOrganizationLogo(logoUrl);
-    
     // Guardar el logo en localStorage para enviarlo al servidor después del login
     if (logoUrl) {
       localStorage.setItem('pendingOrganizationLogo', logoUrl);
