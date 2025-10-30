@@ -17,6 +17,7 @@ interface UserData {
   permissions?: UserPermissions;
   lastLogin: string;
   isInitialSetupComplete: boolean;
+  organizationLogo?: string;
 }
 
 interface AuthState {

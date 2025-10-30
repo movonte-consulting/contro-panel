@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useApi } from '../hooks/useApi';
 import { API_ENDPOINTS } from '../config/api';
+import OrganizationLogoUploader from './OrganizationLogoUploader';
 
 interface LoginFormData {
   username: string;
@@ -17,7 +18,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
-  const { post } = useApi();
+  const { post, put } = useApi();
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
     password: ''
@@ -26,6 +27,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [organizationLogo, setOrganizationLogo] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   // Redirigir si ya está autenticado (solo al cargar el componente)
   useEffect(() => {
@@ -66,6 +69,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         // Usar el hook de autenticación para guardar datos
         login(response.data.token, response.data.user);
         
+        // Si hay un logo de organización pendiente, actualizarlo en el servidor
+        const pendingLogo = localStorage.getItem('pendingOrganizationLogo');
+        if (pendingLogo) {
+          // Esperar un momento para asegurar que el token esté disponible
+          setTimeout(async () => {
+            try {
+              await put(API_ENDPOINTS.PROFILE, { organizationLogo: pendingLogo });
+              localStorage.removeItem('pendingOrganizationLogo');
+              console.log('✅ Organization logo saved successfully');
+            } catch (error) {
+              console.error('Error saving organization logo:', error);
+            }
+          }, 200);
+        }
+        
         setSuccessMessage(response.message || '¡Login exitoso! Redirigiendo...');
         
         // Llamar callback si existe
@@ -91,6 +109,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const togglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleLogoUpload = async (logoUrl: string) => {
+    // Solo guardar en el estado local para preview
+    setOrganizationLogo(logoUrl);
+    
+    // Guardar el logo en localStorage para enviarlo al servidor después del login
+    if (logoUrl) {
+      localStorage.setItem('pendingOrganizationLogo', logoUrl);
+    } else {
+      localStorage.removeItem('pendingOrganizationLogo');
+    }
   };
 
   // Auto-hide messages
@@ -200,6 +230,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 </button>
               </div>
             </div>
+
+            {/* Organization Logo Uploader */}
+            <OrganizationLogoUploader
+              onLogoUpload={handleLogoUpload}
+              organizationName={formData.username}
+              className="pb-2"
+            />
 
             <button
               type="submit"
