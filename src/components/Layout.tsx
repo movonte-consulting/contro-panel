@@ -32,6 +32,36 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { post, put } = useApi();
   const navigate = useNavigate();
 
+  const handleImageToBase64Optimized = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.onload = () => {
+          try {
+            const maxSize = 256; // px
+            let { width, height } = img;
+            const scale = Math.min(1, maxSize / Math.max(width, height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(width * scale);
+            canvas.height = Math.round(height * scale);
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return reject(new Error('Canvas not supported'));
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/png', 0.85);
+            resolve(dataUrl);
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = reject;
+        img.src = reader.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleLogout = async () => {
     try {
       // Llamar al endpoint de logout del servidor
@@ -127,21 +157,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     const file = e.target.files && e.target.files[0];
                     if (!file) return;
                     if (!file.type.startsWith('image/')) return alert('Selecciona una imagen válida');
-                    const reader = new FileReader();
-                    reader.onload = async () => {
-                      const base64 = reader.result as string;
-                      try {
-                        const resp = await put(API_ENDPOINTS.PROFILE, { organizationLogo: base64 });
-                        if (resp.success) {
-                          updateUser({ organizationLogo: base64 } as any);
-                          await refetch();
-                        }
-                      } catch (err) {
-                        console.error('Error subiendo logo:', err);
-                        alert('No se pudo guardar el logo. Intenta de nuevo.');
+                    try {
+                      const base64 = await handleImageToBase64Optimized(file);
+                      const resp = await put(API_ENDPOINTS.PROFILE, { organizationLogo: base64 });
+                      if (resp.success) {
+                        updateUser({ organizationLogo: base64 } as any);
+                        await refetch();
                       }
-                    };
-                    reader.readAsDataURL(file);
+                    } catch (err) {
+                      console.error('Error subiendo logo:', err);
+                      alert('No se pudo guardar el logo. Intenta de nuevo.');
+                    }
                   }}
                   className="w-full text-xs text-gray-300 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                 />
