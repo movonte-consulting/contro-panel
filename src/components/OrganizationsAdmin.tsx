@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../hooks/useAuth';
 import { API_ENDPOINTS } from '../config/api';
 import { ChevronRight, X } from 'lucide-react';
 
@@ -13,12 +14,25 @@ const fallbackLogo = '/favicons/favicon-32x32.png';
 
 const OrganizationsAdmin: React.FC = () => {
   const { get } = useApi();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Organization | null>(null);
 
   useEffect(() => {
+    // Esperar a que la autenticación termine de cargar antes de hacer la llamada
+    if (authLoading) {
+      return;
+    }
+
+    // Solo hacer la llamada si el usuario está autenticado
+    if (!isAuthenticated) {
+      setError('No autenticado. Por favor, inicia sesión nuevamente.');
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
       try {
         setLoading(true);
@@ -36,7 +50,7 @@ const OrganizationsAdmin: React.FC = () => {
       }
     };
     load();
-  }, [get]);
+  }, [get, isAuthenticated, authLoading]);
 
   const sorted = useMemo(() => {
     return [...organizations].sort((a, b) => a.name.localeCompare(b.name));
