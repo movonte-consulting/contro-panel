@@ -27,9 +27,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
-  const { profile } = useProfile();
-  const { post } = useApi();
+  const { user, logout, updateUser } = useAuth();
+  const { profile, refetch } = useProfile();
+  const { post, put } = useApi();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -95,6 +95,48 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* User Info Section */}
         <div className="px-6 py-4 border-b border-gray-700 flex-shrink-0">
+          {/* Organization logo below Movonte logo */}
+          <div className="mb-3">
+            { (profile as any)?.organizationLogo || (user as any)?.organizationLogo ? (
+              <div className="flex items-center space-x-3">
+                <img
+                  src={(profile as any)?.organizationLogo || (user as any)?.organizationLogo}
+                  alt="Organization Logo"
+                  className="w-10 h-10 rounded bg-white object-contain"
+                />
+                <span className="text-gray-300 text-sm">Organization</span>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Add Organization Logo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) return alert('Selecciona una imagen válida');
+                    const reader = new FileReader();
+                    reader.onload = async () => {
+                      const base64 = reader.result as string;
+                      try {
+                        const resp = await put(API_ENDPOINTS.PROFILE, { organizationLogo: base64 });
+                        if (resp.success) {
+                          updateUser({ organizationLogo: base64 } as any);
+                          await refetch();
+                        }
+                      } catch (err) {
+                        console.error('Error subiendo logo:', err);
+                        alert('No se pudo guardar el logo. Intenta de nuevo.');
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  className="w-full text-xs text-gray-300 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                />
+              </div>
+            )}
+          </div>
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-medium">
