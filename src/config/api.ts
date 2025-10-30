@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
   ADMIN_USER_DELETE: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}`,
   ADMIN_USER_PASSWORD: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}/password`,
   ADMIN_USER_PERMISSIONS: (userId: string) => `${API_BASE_URL}/api/admin/users/${userId}/permissions`,
+  ADMIN_ORGANIZATIONS: `${API_BASE_URL}/api/admin/organizations`,
   
   // Dashboard
   DASHBOARD: `${API_BASE_URL}/api/admin/dashboard`,

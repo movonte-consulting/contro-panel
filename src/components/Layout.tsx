@@ -83,7 +83,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       { icon: TestTube, label: 'ChatKit Test', path: '/dashboard/chatkit-test' },
       { icon: Users, label: 'Users', path: '/dashboard/users' },
       { icon: FolderOpen, label: 'Projects', path: '/dashboard/projects' },
-      { icon: Shield, label: 'Service Validations', path: '/dashboard/admin/service-validations' }
+      { icon: Shield, label: 'Service Validations', path: '/dashboard/admin/service-validations' },
+      { icon: FolderOpen, label: 'Organizations', path: '/dashboard/organizations' },
     ] : []),
     { icon: FileText, label: 'Management', path: '/dashboard/management' },
     { icon: Bot, label: 'My Services', path: '/dashboard/my-services' },

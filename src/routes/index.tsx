@@ -13,6 +13,7 @@ import { AdminServiceValidationsPage } from '../components/AdminServiceValidatio
 import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ErrorBoundary from '../components/ErrorBoundary';
+import OrganizationsAdmin from '../components/OrganizationsAdmin';
 
 // 404 Page Component
 const NotFound = () => (
@@ -80,6 +81,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <Layout>
           <ManagementPage />
+        </Layout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard/organizations',
+    element: (
+      <ProtectedRoute>
+        <Layout>
+          <OrganizationsAdmin />
         </Layout>
       </ProtectedRoute>
     ),
