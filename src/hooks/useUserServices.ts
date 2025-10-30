@@ -30,6 +30,7 @@ export interface UserService {
     adminApproved?: boolean;
     adminApprovedAt?: string;
     projectKey?: string;
+    disable_tickets_state?: string[];
   };
 }
 
@@ -56,7 +57,11 @@ export interface UpdateServiceData {
   assistantId?: string;
   assistantName?: string;
   isActive?: boolean;
-  configuration?: any;
+  configuration?: {
+    projectKey?: string;
+    disable_tickets_state?: string[];
+    [key: string]: any;
+  };
 }
 
 export interface ChatResponse {

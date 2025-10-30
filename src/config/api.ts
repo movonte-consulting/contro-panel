@@ -34,6 +34,8 @@ export const API_ENDPOINTS = {
   USER_TICKET_DISABLE: (issueKey: string) => `${API_BASE_URL}/api/user/tickets/${issueKey}/disable`,
   USER_TICKET_ENABLE: (issueKey: string) => `${API_BASE_URL}/api/user/tickets/${issueKey}/enable`,
   USER_TICKET_STATUS: (issueKey: string) => `${API_BASE_URL}/api/user/tickets/${issueKey}/status`,
+  // User Statuses (Estados disponibles por usuario/proyecto)
+  USER_STATUSES_AVAILABLE: `${API_BASE_URL}/api/user/statuses/available`,
   
   // User Webhooks (Webhooks Personalizados por Usuario)
   USER_WEBHOOK_CONFIGURE: `${API_BASE_URL}/api/user/webhook/configure`,
@@ -74,6 +76,8 @@ export const API_ENDPOINTS = {
       // Proyectos
       PROJECTS: `${API_BASE_URL}/api/admin/projects`,
       PROJECTS_SET_ACTIVE: `${API_BASE_URL}/api/admin/projects/set-active`,
+      // Estados (Admin)
+      STATUSES_AVAILABLE: `${API_BASE_URL}/api/admin/statuses/available`,
       
       // Servicios
       SERVICES: `${API_BASE_URL}/api/admin/services`,

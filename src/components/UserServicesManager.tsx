@@ -14,6 +14,8 @@ import {
   Settings
 } from 'lucide-react';
 import { useUserServices, type CreateServiceData } from '../hooks/useUserServices';
+import { useApi } from '../hooks/useApi';
+import { API_ENDPOINTS } from '../config/api';
 import ServiceEndpointsModal from './ServiceEndpointsModal';
 import ServiceValidationModal from './ServiceValidationModal';
 
@@ -376,6 +378,7 @@ export const UserServicesManager: React.FC = () => {
     loadUserAssistants,
     loadUserProjects
   } = useUserServices();
+  const { get } = useApi();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
@@ -388,6 +391,10 @@ export const UserServicesManager: React.FC = () => {
     serviceName: string;
     currentProjectKey?: string;
   } | null>(null);
+  const [selectedProjectKey, setSelectedProjectKey] = useState<string>('');
+  const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [isLoadingStatuses, setIsLoadingStatuses] = useState<boolean>(false);
   const [createdService, setCreatedService] = useState<{
     serviceId: string;
     serviceName: string;
@@ -479,27 +486,62 @@ export const UserServicesManager: React.FC = () => {
       serviceName: service.serviceName,
       currentProjectKey: service.configuration?.projectKey || ''
     });
+    setSelectedProjectKey(service.configuration?.projectKey || '');
+    setSelectedStatuses(service.configuration?.disable_tickets_state || []);
     setShowProjectConfigModal(true);
   };
 
-  const handleUpdateProjectConfig = async (projectKey: string) => {
+  const handleSaveProjectAndStatuses = async () => {
     if (!selectedServiceForConfig) return;
-    
     try {
-      // Aquí necesitamos crear una función para actualizar la configuración del proyecto
-      // Por ahora, vamos a usar la función de actualización existente
       await updateService(selectedServiceForConfig.serviceId, {
-        configuration: { projectKey }
+        configuration: {
+          projectKey: selectedProjectKey,
+          disable_tickets_state: selectedStatuses
+        }
       });
-      
-      setSuccessMessage(`Project configured successfully for "${selectedServiceForConfig.serviceName}"`);
+      setSuccessMessage(`Configuration saved for "${selectedServiceForConfig.serviceName}"`);
       setTimeout(() => setSuccessMessage(null), 5000);
       setShowProjectConfigModal(false);
       setSelectedServiceForConfig(null);
+      setAvailableStatuses([]);
+      setSelectedStatuses([]);
+      setSelectedProjectKey('');
     } catch (error) {
-      console.error('Error updating project configuration:', error);
+      console.error('Error saving configuration:', error);
+      setErrorMessage('Failed to save configuration');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
+
+  React.useEffect(() => {
+    const loadStatuses = async () => {
+      if (!showProjectConfigModal) return;
+      setIsLoadingStatuses(true);
+      try {
+        // Intentar endpoint de usuario primero
+        let response = await get(API_ENDPOINTS.USER_STATUSES_AVAILABLE);
+        if (!response?.success || !response?.data) {
+          // Fallback a admin si el de usuario no está disponible
+          response = await get((API_ENDPOINTS as any).STATUSES_AVAILABLE || API_ENDPOINTS.USER_STATUSES_AVAILABLE);
+        }
+        if (response?.success && response?.data) {
+          // La API del dashboard clásico devuelve array de objetos { id, name }
+          const statuses: string[] = Array.isArray(response.data)
+            ? response.data.map((s: any) => (typeof s === 'string' ? s : s.name)).filter(Boolean)
+            : [];
+          setAvailableStatuses(statuses);
+        } else {
+          setAvailableStatuses([]);
+        }
+      } catch (e) {
+        setAvailableStatuses([]);
+      } finally {
+        setIsLoadingStatuses(false);
+      }
+    };
+    loadStatuses();
+  }, [showProjectConfigModal, get]);
 
   const handleTestService = (serviceId: string, serviceName: string) => {
     setSelectedService({ id: serviceId, name: serviceName });
@@ -735,7 +777,7 @@ export const UserServicesManager: React.FC = () => {
         <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ${showProjectConfigModal ? 'block' : 'hidden'}`}>
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Configure Jira Project
+              Configure Jira Project & Ticket States
             </h3>
             <p className="text-sm text-gray-600 mb-4">
               Select the Jira project for service: <strong>{selectedServiceForConfig.serviceName}</strong>
@@ -746,13 +788,9 @@ export const UserServicesManager: React.FC = () => {
                 Current Project: {selectedServiceForConfig.currentProjectKey || 'Not configured'}
               </label>
               <select
-                onChange={(e) => {
-                  if (e.target.value) {
-                    handleUpdateProjectConfig(e.target.value);
-                  }
-                }}
+                value={selectedProjectKey}
+                onChange={(e) => setSelectedProjectKey(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                defaultValue=""
               >
                 <option value="">Select a project...</option>
                 {projects.map(project => (
@@ -762,16 +800,64 @@ export const UserServicesManager: React.FC = () => {
                 ))}
               </select>
             </div>
+
+            {/* Estados a ignorar por IA */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ticket statuses to ignore (IA will omit responses)
+              </label>
+              {isLoadingStatuses ? (
+                <div className="text-sm text-gray-500 flex items-center"><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Loading statuses...</div>
+              ) : availableStatuses.length === 0 ? (
+                <div className="text-sm text-gray-500">No statuses available</div>
+              ) : (
+                <div className="max-h-48 overflow-auto border rounded p-2 space-y-2">
+                  {availableStatuses.map((status) => {
+                    const id = `status_${status.replace(/\s+/g, '_')}`;
+                    const checked = selectedStatuses.includes(status);
+                    return (
+                      <label key={id} htmlFor={id} className="flex items-center space-x-2 text-sm">
+                        <input
+                          id={id}
+                          type="checkbox"
+                          className="h-4 w-4"
+                          checked={checked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedStatuses(prev => Array.from(new Set([...prev, status])));
+                            } else {
+                              setSelectedStatuses(prev => prev.filter(s => s !== status));
+                            }
+                          }}
+                        />
+                        <span>{status}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="text-xs text-gray-500 mt-2">When a ticket is in any of these states, the AI will not respond for this service.</p>
+            </div>
             
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => {
                   setShowProjectConfigModal(false);
                   setSelectedServiceForConfig(null);
+                  setAvailableStatuses([]);
+                  setSelectedStatuses([]);
+                  setSelectedProjectKey('');
                 }}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 Cancel
+              </button>
+              <button
+                onClick={handleSaveProjectAndStatuses}
+                disabled={!selectedProjectKey}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 flex items-center"
+              >
+                Save Configuration
               </button>
             </div>
           </div>
