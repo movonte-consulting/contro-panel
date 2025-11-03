@@ -349,14 +349,18 @@ export const AdminServiceValidations: React.FC<AdminServiceValidationsProps> = (
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     URL del Sitio Web
                   </label>
-                  <p className="text-gray-900">{selectedValidation.websiteUrl}</p>
+                  <p className={`text-gray-900 ${!selectedValidation.websiteUrl ? 'text-gray-400 italic' : ''}`}>
+                    {selectedValidation.websiteUrl || 'No especificado'}
+                  </p>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Dominio Solicitado
                   </label>
-                  <p className="text-gray-900">{selectedValidation.requestedDomain}</p>
+                  <p className={`text-gray-900 ${!selectedValidation.requestedDomain ? 'text-gray-400 italic' : ''}`}>
+                    {selectedValidation.requestedDomain || 'No especificado'}
+                  </p>
                 </div>
                 
                 <div>
