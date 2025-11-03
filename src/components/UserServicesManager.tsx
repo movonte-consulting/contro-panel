@@ -657,17 +657,21 @@ export const UserServicesManager: React.FC = () => {
                   <p className="text-sm text-gray-600">ID: {service.serviceId}</p>
                 </div>
                 <span className={`px-2 py-1 text-xs rounded-full ${
-                  service.isActive 
+                  service.approvalStatus === 'approved' && service.isActive
                     ? 'bg-green-100 text-green-800' 
-                    : service.configuration?.adminApproved 
+                    : service.approvalStatus === 'approved'
                       ? 'bg-blue-100 text-blue-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      : service.approvalStatus === 'rejected'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {service.isActive 
+                  {service.approvalStatus === 'approved' && service.isActive
                     ? 'Active' 
-                    : service.configuration?.adminApproved 
-                      ? 'Approved'
-                      : 'Pending Approval'
+                    : service.approvalStatus === 'approved'
+                      ? 'Approved (Inactive)'
+                      : service.approvalStatus === 'rejected'
+                        ? 'Rejected'
+                        : 'Pending Approval'
                   }
                 </span>
               </div>
@@ -683,26 +687,29 @@ export const UserServicesManager: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleTestService(service.serviceId, service.serviceName)}
-                  className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center justify-center"
-                >
-                  <MessageSquare className="w-4 h-4 mr-1" />
-                  Test
-                </button>
-                
-                {/* Botón de Configurar Proyecto */}
-                <button
-                  onClick={() => handleConfigureProject(service)}
-                  className="bg-purple-600 text-white px-3 py-2 rounded text-sm hover:bg-purple-700 flex items-center"
-                  title="Configure Jira project"
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
-                
-                {/* Botón de Endpoints - Solo visible si el servicio está activo */}
-                {service.isActive && (
+              {/* Botones de acción - Solo mostrar si el servicio está aprobado */}
+              {service.approvalStatus === 'approved' ? (
+                <div className="flex space-x-2">
+                  {/* Botón de Test */}
+                  <button
+                    onClick={() => handleTestService(service.serviceId, service.serviceName)}
+                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center justify-center"
+                    title="Test service"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-1" />
+                    Test
+                  </button>
+                  
+                  {/* Botón de Configurar Proyecto */}
+                  <button
+                    onClick={() => handleConfigureProject(service)}
+                    className="bg-purple-600 text-white px-3 py-2 rounded text-sm hover:bg-purple-700 flex items-center"
+                    title="Configure Jira project"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                  
+                  {/* Botón de Ver Endpoints */}
                   <button
                     onClick={() => {
                       setCreatedService({
@@ -718,10 +725,8 @@ export const UserServicesManager: React.FC = () => {
                   >
                     <CheckCircle className="w-4 h-4" />
                   </button>
-                )}
-                
-                {/* Botón de Toggle - Solo visible si YA ha sido aprobado por admin */}
-                {service.configuration?.adminApproved && (
+                  
+                  {/* Botón de Apagar/Encender */}
                   <button
                     onClick={() => handleToggleService(service.serviceId, service.isActive)}
                     className={`px-3 py-2 rounded text-sm flex items-center ${
@@ -731,24 +736,29 @@ export const UserServicesManager: React.FC = () => {
                     }`}
                     title={service.isActive ? 'Desactivar servicio' : 'Activar servicio'}
                   >
-                    <Power className="w-4 h-4" />
+                    <Power className={`w-4 h-4 ${service.isActive ? '' : 'opacity-75'}`} />
                   </button>
-                )}
-                
-                {/* Indicador de pendiente de aprobación */}
-                {!service.configuration?.adminApproved && (
-                  <div className="px-3 py-2 rounded text-sm bg-yellow-100 text-yellow-800 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    <span className="text-xs">Pending Approval</span>
-                  </div>
-                )}
-                <button
-                  onClick={() => handleDeleteService(service.serviceId, service.serviceName)}
-                  className="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 flex items-center"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                  
+                  {/* Botón de Eliminar */}
+                  <button
+                    onClick={() => handleDeleteService(service.serviceId, service.serviceName)}
+                    className="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 flex items-center"
+                    title="Delete service"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                /* Estado pendiente o rechazado - No mostrar botones, solo indicador */
+                <div className="px-3 py-2 rounded text-sm bg-yellow-100 text-yellow-800 flex items-center justify-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  <span className="text-xs">
+                    {service.approvalStatus === 'rejected' 
+                      ? 'Service has been rejected' 
+                      : 'Waiting for admin approval'}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>

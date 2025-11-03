@@ -26,6 +26,7 @@ export interface UserService {
   assistantName: string;
   isActive: boolean;
   lastUpdated: string;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
   configuration?: {
     adminApproved?: boolean;
     adminApprovedAt?: string;
