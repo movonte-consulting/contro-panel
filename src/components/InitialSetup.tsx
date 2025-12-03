@@ -40,7 +40,8 @@ const InitialSetup: React.FC = () => {
 
   // Verificar si el usuario ya completó la configuración
   useEffect(() => {
-    if (user?.isInitialSetupComplete) {
+    // Si el usuario tiene isInitialSetupComplete === true, redirigir al dashboard
+    if (user && user.isInitialSetupComplete === true) {
       navigate('/dashboard');
     }
   }, [user, navigate]);
