@@ -4,13 +4,11 @@ import { useActivityContext } from '../contexts/ActivityContext';
 import AssistantsList from '../components/Dashboard/AssistantsList';
 import RecentActivity from '../components/Dashboard/RecentActivity';
 import { UserServicesManagement } from '../components/Dashboard/UserServicesManagement';
-import ChatKitWidget from '../components/ChatPage/ChatKitWidget';
 import { MessageCircle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { profile } = useProfile();
   const { activities } = useActivityContext();
-  const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [showChat, setShowChat] = useState(true);
 
   return (
@@ -42,15 +40,6 @@ const Dashboard: React.FC = () => {
         <div className="xl:col-span-1 space-y-6">
           <RecentActivity activities={activities} />
           
-          {/* ChatKit Widget */}
-          {showChat && (
-            <ChatKitWidget
-              isMinimized={isChatMinimized}
-              onToggleMinimize={() => setIsChatMinimized(!isChatMinimized)}
-              onClose={() => setShowChat(false)}
-              className="w-full"
-            />
-          )}
         </div>
       </div>
 

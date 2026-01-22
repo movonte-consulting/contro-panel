@@ -10,8 +10,6 @@ import {
   X,
   FolderOpen,
   Bot,
-  MessageCircle,
-  TestTube,
   Shield
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -77,9 +75,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
-    { icon: MessageCircle, label: 'AI Chat', path: '/dashboard/chat' },
     ...(user?.role === 'admin' ? [
-      { icon: TestTube, label: 'ChatKit Test', path: '/dashboard/chatkit-test' },
       { icon: Users, label: 'Users', path: '/dashboard/users' },
       { icon: FolderOpen, label: 'Projects', path: '/dashboard/projects' },
       { icon: Shield, label: 'Service Validations', path: '/dashboard/admin/service-validations' },

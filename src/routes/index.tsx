@@ -7,12 +7,9 @@ import UsersPage from '../pages/UsersPage';
 import ManagementPage from '../pages/ManagementPage';
 import SettingsPage from '../pages/SettingsPage';
 import UserServicesPage from '../pages/UserServicesPage';
-import ChatPage from '../pages/ChatPage';
-import ChatKitTestPage from '../pages/ChatKitTestPage';
 import { AdminServiceValidationsPage } from '../pages/AdminServiceValidationsPage';
 import Layout from '../layout/Layout';
 import ProtectedRoute from '../components/commons/ProtectedRoute';
-import ErrorBoundary from '../components/commons/ErrorBoundary';
 import OrganizationsAdmin from '../pages/OrganizationsAdmin';
 
 // 404 Page Component
@@ -121,28 +118,6 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <Layout>
           <AdminServiceValidationsPage />
-        </Layout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/dashboard/chat',
-    element: (
-      <ProtectedRoute>
-        <ErrorBoundary>
-          <ChatPage />
-        </ErrorBoundary>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/dashboard/chatkit-test',
-    element: (
-      <ProtectedRoute>
-        <Layout>
-          <ErrorBoundary>
-            <ChatKitTestPage />
-          </ErrorBoundary>
         </Layout>
       </ProtectedRoute>
     ),
