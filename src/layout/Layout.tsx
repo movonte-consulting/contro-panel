@@ -19,7 +19,6 @@ import { useApi } from '../hooks/useApi';
 import { useProfile } from '../hooks/useProfile';
 import { API_ENDPOINTS } from '../config/api';
 import { ActivityProvider } from '../contexts/ActivityContext';
-import AuthDebug from '../components/AuthDebug';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -40,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         img.onload = () => {
           try {
             const maxSize = 256; // px
-            let { width, height } = img;
+            const { width, height } = img;
             const scale = Math.min(1, maxSize / Math.max(width, height));
             const canvas = document.createElement('canvas');
             canvas.width = Math.round(width * scale);
@@ -128,16 +127,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="px-6 py-4 border-b border-gray-700 flex-shrink-0">
           {/* Organization logo below Movonte logo */}
           <div className="mb-3">
-            { (profile as any)?.organizationLogo || (user as any)?.organizationLogo ? (
+            { (profile )?.organizationLogo || (user)?.organizationLogo ? (
               <div className="flex items-center space-x-3">
                 <img
-                  src={(profile as any)?.organizationLogo || (user as any)?.organizationLogo}
+                  src={(profile)?.organizationLogo || (user)?.organizationLogo}
                   alt="Organization Logo"
                   className="w-10 h-10 rounded bg-white object-contain"
                 />
                 <span className="text-gray-300 text-sm">
                   {(() => {
-                    const raw = (profile as any)?.jiraUrl || (user as any)?.jiraUrl;
+                    const raw = (profile)?.jiraUrl || (user)?.jiraUrl;
                     if (!raw) return 'Organization';
                     try {
                       const u = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
@@ -162,7 +161,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       const base64 = await handleImageToBase64Optimized(file);
                       const resp = await put(API_ENDPOINTS.PROFILE, { organizationLogo: base64 });
                       if (resp.success) {
-                        updateUser({ organizationLogo: base64 } as any);
+                        updateUser({ organizationLogo: base64 } );
                         await refetch();
                       }
                     } catch (err) {
@@ -260,8 +259,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </main>
           </div>
           
-          {/* Debug component - solo en desarrollo */}
-          <AuthDebug />
+        
         </div>
       </ActivityProvider>
     );

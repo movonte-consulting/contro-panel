@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { useActivityContext } from '../contexts/ActivityContext';
-import AssistantsList from '../components/AssistantsList';
-import RecentActivity from '../components/RecentActivity';
-import { UserServicesManager } from '../components/UserServicesManager';
-import ChatKitWidget from '../components/ChatKitWidget';
+import AssistantsList from '../components/Dashboard/AssistantsList';
+import RecentActivity from '../components/Dashboard/RecentActivity';
+import { UserServicesManagement } from '../components/Dashboard/UserServicesManagement';
+import ChatKitWidget from '../components/ChatPage/ChatKitWidget';
 import { MessageCircle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600">Create and manage your personalized AI services</p>
           </div>
         </div>
-        <UserServicesManager />
+        <UserServicesManagement />
       </div>
 
       {/* System Status - Full Width */}

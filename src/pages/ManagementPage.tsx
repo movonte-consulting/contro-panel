@@ -1,7 +1,7 @@
 import React from 'react';
-import ServicesManager from '../components/ServicesManager';
-import TicketsManager from '../components/TicketsManager';
-import WebhooksManager from '../components/WebhooksManager';
+import ServicesManagement from '../components/Management/ServicesManagement';
+import TicketsManagement from '../components/Management/TicketsManagement';
+import WebhooksManagement from '../components/Management/WebhooksManagement';
 
 const ManagementPage: React.FC = () => {
   return (
@@ -14,23 +14,20 @@ const ManagementPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Services Management */}
+   
       <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
         <div>
-          <ServicesManager />
+          <ServicesManagement />
         </div>
       </div>
 
-      {/* Tickets and Webhooks Management */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Tickets Manager */}
         <div>
-          <TicketsManager />
+          <TicketsManagement />
         </div>
-        
-        {/* Webhooks Manager */}
+      
         <div>
-          <WebhooksManager />
+          <WebhooksManagement />
         </div>
       </div>
     </div>

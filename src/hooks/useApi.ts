@@ -21,10 +21,7 @@ export const useApi = () => {
   ): Promise<ApiResponse<T>> => {
     const { requireAuth = true, ...fetchOptions } = options;
 
-    // Si requiere autenticación pero no hay token, retornar error
     if (requireAuth && !token) {
-      console.log('❌ No hay token de autenticación');
-      // Solo hacer logout para endpoints críticos de autenticación
       if (endpoint.includes('/auth/') || endpoint.includes('/profile')) {
         logout();
         return {
@@ -32,7 +29,6 @@ export const useApi = () => {
           error: 'No autenticado. Redirigiendo al login...',
         };
       } else {
-        // Para otros endpoints, solo devolver error sin hacer logout
         return {
           success: false,
           error: 'No autenticado. Por favor, inicia sesión nuevamente.',
@@ -40,13 +36,12 @@ export const useApi = () => {
       }
     }
 
-    // Preparar headers
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(fetchOptions.headers as Record<string, string>),
     };
 
-    // Añadir token de autenticación si es requerido
+
     if (requireAuth && token) {
       headers.Authorization = `Bearer ${token}`;
     }

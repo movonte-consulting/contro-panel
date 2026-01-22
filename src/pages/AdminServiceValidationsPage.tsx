@@ -1,5 +1,5 @@
 import React from 'react';
-import { AdminServiceValidations } from '../components/AdminServiceValidations';
+import { AdminServiceValidations } from '../components/AdminValidation/AdminServiceValidations';
 
 export const AdminServiceValidationsPage: React.FC = () => {
   return (

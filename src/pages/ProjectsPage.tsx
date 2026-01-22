@@ -1,6 +1,6 @@
 import React from 'react';
-import ProjectsManager from '../components/ProjectsManager';
-import RemoteProjectsManager from '../components/RemoteProjectsManager';
+import ProjectsManagement from '../components/Projects/ProjectsManagement';
+import RemoteProjectsManagement from '../components/Projects/RemoteProjectsManagement';
 
 const ProjectsPage: React.FC = () => {
   return (
@@ -17,12 +17,12 @@ const ProjectsPage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* AI Enabled Projects */}
         <div>
-          <ProjectsManager />
+          <ProjectsManagement />
         </div>
         
         {/* Remote Server Integration */}
         <div>
-          <RemoteProjectsManager />
+          <RemoteProjectsManagement />
         </div>
       </div>
     </div>

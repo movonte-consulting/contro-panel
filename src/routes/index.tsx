@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Login from '../pages/Login';
+import LoginPage from '../pages/Login';
 import InitialSetup from '../pages/InitialSetup';
 import Dashboard from '../pages/Dashboard';
 import ProjectsPage from '../pages/ProjectsPage';
@@ -11,8 +11,8 @@ import ChatPage from '../pages/ChatPage';
 import ChatKitTestPage from '../pages/ChatKitTestPage';
 import { AdminServiceValidationsPage } from '../pages/AdminServiceValidationsPage';
 import Layout from '../layout/Layout';
-import ProtectedRoute from '../components/ProtectedRoute';
-import ErrorBoundary from '../components/ErrorBoundary';
+import ProtectedRoute from '../components/commons/ProtectedRoute';
+import ErrorBoundary from '../components/commons/ErrorBoundary';
 import OrganizationsAdmin from '../pages/OrganizationsAdmin';
 
 // 404 Page Component
@@ -35,11 +35,11 @@ const NotFound = () => (
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: '/login',
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: '/setup',

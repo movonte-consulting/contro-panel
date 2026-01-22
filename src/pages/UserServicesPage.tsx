@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserServicesManager } from '../components/UserServicesManager';
+import { UserServicesManagement } from '../components/Dashboard/UserServicesManagement';
 import { useUserServices } from '../hooks/useUserServices';
 import { Bot, FolderOpen, Settings, Loader2 } from 'lucide-react';
 
@@ -101,7 +101,7 @@ export const UserServicesPage: React.FC = () => {
         </div>
 
         {/* Services Manager */}
-        <UserServicesManager />
+        <UserServicesManagement />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React from 'react';
-import UsersManager from '../components/UsersManager';
+import UsersManagement from '../components/Users/UsersManagement';
 
 const UsersPage: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const UsersPage: React.FC = () => {
       {/* User Management */}
       <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
         <div>
-          <UsersManager />
+          <UsersManagement />
         </div>
       </div>
     </div>

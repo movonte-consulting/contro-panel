@@ -10,12 +10,6 @@ interface Project {
   projectTypeKey: string;
 }
 
-// interface ProjectsResponse {
-//   success: boolean;
-//   count: number;
-//   projects: Project[];
-//   timestamp: string;
-// }
 
 interface UseProjectsReturn {
   projects: Project[];

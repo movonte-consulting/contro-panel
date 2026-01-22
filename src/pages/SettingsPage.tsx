@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Settings, Key, User, Shield, Mail, Calendar, CheckCircle, XCircle, Cog } from 'lucide-react';
-import ChangePasswordModal from '../components/ChangePasswordModal';
-import TokenConfiguration from '../components/TokenConfiguration';
+import ChangePasswordModal from '../components/Settings/ChangePasswordModal';
+import TokenConfiguration from '../components/Settings/TokenConfiguration';
 import { useProfile } from '../hooks/useProfile';
 import { useAuth } from '../hooks/useAuth';
 
