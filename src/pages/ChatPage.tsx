@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import ChatKitWidget from './ChatKitWidget';
-import ChatKitDebug from './ChatKitDebug';
+import ChatKitWidget from '../components/ChatKitWidget';
+import ChatKitDebug from '../components/ChatKitDebug';
 import { MessageCircle, Settings, BarChart3, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

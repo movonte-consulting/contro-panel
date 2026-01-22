@@ -1,19 +1,19 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Login from '../components/Login';
-import InitialSetup from '../components/InitialSetup';
-import Dashboard from '../components/Dashboard';
-import ProjectsPage from '../components/ProjectsPage';
-import UsersPage from '../components/UsersPage';
-import ManagementPage from '../components/ManagementPage';
-import SettingsPage from '../components/SettingsPage';
-import UserServicesPage from '../components/UserServicesPage';
-import ChatPage from '../components/ChatPage';
-import ChatKitTestPage from '../components/ChatKitTestPage';
-import { AdminServiceValidationsPage } from '../components/AdminServiceValidationsPage';
-import Layout from '../components/Layout';
+import Login from '../pages/Login';
+import InitialSetup from '../pages/InitialSetup';
+import Dashboard from '../pages/Dashboard';
+import ProjectsPage from '../pages/ProjectsPage';
+import UsersPage from '../pages/UsersPage';
+import ManagementPage from '../pages/ManagementPage';
+import SettingsPage from '../pages/SettingsPage';
+import UserServicesPage from '../pages/UserServicesPage';
+import ChatPage from '../pages/ChatPage';
+import ChatKitTestPage from '../pages/ChatKitTestPage';
+import { AdminServiceValidationsPage } from '../pages/AdminServiceValidationsPage';
+import Layout from '../layout/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ErrorBoundary from '../components/ErrorBoundary';
-import OrganizationsAdmin from '../components/OrganizationsAdmin';
+import OrganizationsAdmin from '../pages/OrganizationsAdmin';
 
 // 404 Page Component
 const NotFound = () => (

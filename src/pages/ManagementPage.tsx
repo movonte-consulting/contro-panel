@@ -1,7 +1,7 @@
 import React from 'react';
-import ServicesManager from './ServicesManager';
-import TicketsManager from './TicketsManager';
-import WebhooksManager from './WebhooksManager';
+import ServicesManager from '../components/ServicesManager';
+import TicketsManager from '../components/TicketsManager';
+import WebhooksManager from '../components/WebhooksManager';
 
 const ManagementPage: React.FC = () => {
   return (

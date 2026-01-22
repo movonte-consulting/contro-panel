@@ -1,5 +1,5 @@
 import React from 'react';
-import UsersManager from './UsersManager';
+import UsersManager from '../components/UsersManager';
 
 const UsersPage: React.FC = () => {
   return (

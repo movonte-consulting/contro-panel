@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserServicesManager } from './UserServicesManager';
+import { UserServicesManager } from '../components/UserServicesManager';
 import { useUserServices } from '../hooks/useUserServices';
 import { Bot, FolderOpen, Settings, Loader2 } from 'lucide-react';
 

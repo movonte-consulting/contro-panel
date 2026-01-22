@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useProfile } from '../hooks/useProfile';
 import { useActivityContext } from '../contexts/ActivityContext';
-import AssistantsList from './AssistantsList';
-import RecentActivity from './RecentActivity';
-import { UserServicesManager } from './UserServicesManager';
-import ChatKitWidget from './ChatKitWidget';
+import AssistantsList from '../components/AssistantsList';
+import RecentActivity from '../components/RecentActivity';
+import { UserServicesManager } from '../components/UserServicesManager';
+import ChatKitWidget from '../components/ChatKitWidget';
 import { MessageCircle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {

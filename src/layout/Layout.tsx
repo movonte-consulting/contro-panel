@@ -19,7 +19,7 @@ import { useApi } from '../hooks/useApi';
 import { useProfile } from '../hooks/useProfile';
 import { API_ENDPOINTS } from '../config/api';
 import { ActivityProvider } from '../contexts/ActivityContext';
-import AuthDebug from './AuthDebug';
+import AuthDebug from '../components/AuthDebug';
 
 interface LayoutProps {
   children: React.ReactNode;

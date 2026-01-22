@@ -1,6 +1,6 @@
 import React from 'react';
-import ProjectsManager from './ProjectsManager';
-import RemoteProjectsManager from './RemoteProjectsManager';
+import ProjectsManager from '../components/ProjectsManager';
+import RemoteProjectsManager from '../components/RemoteProjectsManager';
 
 const ProjectsPage: React.FC = () => {
   return (
