@@ -49,7 +49,6 @@ export const API_ENDPOINTS = {
   USER_WEBHOOKS_DELETE: (id: string) => `${API_BASE_URL}/api/user/webhooks/${id}`,
 
   // Service Validation (Validación de Servicios)
-  SERVICE_VALIDATION_REQUEST: `${API_BASE_URL}/api/user/service-validation/request`,
   SERVICE_VALIDATION_REQUESTS: `${API_BASE_URL}/api/user/service-validation/requests`,
   SERVICE_VALIDATION_PENDING: `${API_BASE_URL}/api/admin/service-validation/pending`,
   SERVICE_VALIDATION_APPROVE: (id: string) => `${API_BASE_URL}/api/admin/service-validation/${id}/approve`,

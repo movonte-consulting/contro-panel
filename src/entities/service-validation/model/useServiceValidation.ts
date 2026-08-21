@@ -2,13 +2,6 @@ import { useState, useCallback } from 'react';
 import { useApi } from '../../../shared/api';
 import { API_ENDPOINTS } from '../../../shared/api';
 
-export interface ServiceValidationRequest {
-  serviceName: string;
-  serviceDescription?: string;
-  websiteUrl: string;
-  requestedDomain: string;
-}
-
 export interface ServiceValidation {
   id: number;
   serviceName: string;
@@ -41,23 +34,6 @@ export const useServiceValidation = () => {
   const { post, get } = useApi();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Crear solicitud de validación de servicio
-  const createValidationRequest = useCallback(async (request: ServiceValidationRequest): Promise<ServiceValidation> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await post<ServiceValidation>(API_ENDPOINTS.SERVICE_VALIDATION_REQUEST, request);
-      return response.data!;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al crear solicitud de validación';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [post]);
 
   // Obtener solicitudes de validación del usuario
   const getUserValidations = useCallback(async (): Promise<ServiceValidation[]> => {
@@ -190,7 +166,6 @@ export const useServiceValidation = () => {
   return {
     loading,
     error,
-    createValidationRequest,
     getUserValidations,
     getPendingValidations,
     approveValidation,
