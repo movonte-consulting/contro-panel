@@ -1,0 +1,321 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useApi } from '../../../shared/api';
+import { useAuth } from '../../../entities/session';
+import { API_ENDPOINTS } from '../../../shared/api';
+
+interface WebhookStatus {
+  isEnabled: boolean;
+  webhookUrl?: string;
+  lastTest?: string;
+  filterEnabled: boolean;
+  filterCondition?: string;
+  filterValue?: string;
+}
+
+interface SavedWebhook {
+  id: number;
+  userId: number;
+  serviceId?: string;
+  serviceName?: string;
+  assistantId?: string;
+  token?: string;
+  name: string;
+  url: string;
+  description?: string;
+  isEnabled: boolean;
+  filterEnabled: boolean;
+  filterCondition?: string;
+  filterValue?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+interface WebhookTestResult {
+  status: string;
+  responseTime: number;
+  webhookUrl: string;
+}
+
+interface UseWebhooksReturn {
+  webhookStatus: WebhookStatus | null;
+  savedWebhooks: SavedWebhook[];
+  isLoading: boolean;
+  error: string | null;
+  refetchStatus: () => Promise<void>;
+  refetchSaved: () => Promise<void>;
+  configureWebhook: (webhookUrl: string, assistantId: string) => Promise<boolean>;
+  testWebhook: () => Promise<WebhookTestResult | null>;
+  disableWebhook: () => Promise<boolean>;
+  setWebhookFilter: (filterEnabled: boolean, filterCondition?: string, filterValue?: string) => Promise<boolean>;
+  saveWebhook: (data: {
+    name: string;
+    url: string;
+    description?: string;
+    serviceId?: string;
+    assistantId?: string;
+    token?: string;
+    filterEnabled?: boolean;
+    filterCondition?: string;
+    filterValue?: string;
+  }) => Promise<boolean>;
+  updateWebhook: (id: number, data: {
+    name?: string;
+    url?: string;
+    description?: string;
+    serviceId?: string;
+    assistantId?: string;
+    token?: string;
+    isEnabled?: boolean;
+    filterEnabled?: boolean;
+    filterCondition?: string;
+    filterValue?: string;
+  }) => Promise<boolean>;
+  deleteWebhook: (id: number) => Promise<boolean>;
+}
+
+export const useWebhooks = (mode: 'user' | 'admin' = 'user'): UseWebhooksReturn => {
+  const [webhookStatus, setWebhookStatus] = useState<WebhookStatus | null>(null);
+  const [savedWebhooks, setSavedWebhooks] = useState<SavedWebhook[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { get, post, put, delete: deleteRequest } = useApi();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const isAdminMode = mode === 'admin';
+
+  const fetchWebhookStatus = useCallback(async () => {
+    if (!isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_STATUS : API_ENDPOINTS.USER_WEBHOOK_STATUS;
+      console.log('🔄 Loading webhook status...', isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await get<WebhookStatus>(endpoint);
+      if (response.success && response.data) {
+        setWebhookStatus(response.data);
+        console.log('✅ Webhook status loaded:', response.data);
+      } else {
+        setError(response.error || 'Error al obtener el estado del webhook');
+        setWebhookStatus(null);
+      }
+    } catch (err) {
+      console.error('Error fetching webhook status:', err);
+      setError('Error de conexión al obtener el estado del webhook');
+      setWebhookStatus(null);
+    }
+  }, [isAuthenticated, isAdminMode]);
+
+  const fetchSavedWebhooks = useCallback(async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_SAVED : API_ENDPOINTS.USER_WEBHOOKS_SAVED;
+      console.log('🔄 Loading saved webhooks...', isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await get<{ webhooks: SavedWebhook[] }>(endpoint);
+      if (response.success && response.data) {
+        setSavedWebhooks(response.data.webhooks || []);
+        console.log('✅ Saved webhooks loaded:', response.data.webhooks?.length || 0);
+      } else {
+        setError(response.error || 'Error al obtener los webhooks guardados');
+        setSavedWebhooks([]);
+      }
+    } catch (err) {
+      console.error('Error fetching saved webhooks:', err);
+      setError('Error de conexión al obtener los webhooks guardados');
+      setSavedWebhooks([]);
+    }
+  }, [isAuthenticated, isAdminMode]);
+
+  const configureWebhook = useCallback(async (webhookUrl: string, assistantId: string): Promise<boolean> => {
+    if (!webhookUrl || !assistantId) {
+      setError('Se requiere la URL del webhook y el ID del asistente');
+      return false;
+    }
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_CONFIGURE : API_ENDPOINTS.USER_WEBHOOK_CONFIGURE;
+      console.log('🔄 Configuring webhook:', webhookUrl, isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await post(endpoint, { webhookUrl, assistantId });
+      if (response.success) {
+        console.log('✅ Webhook configured:', webhookUrl);
+        await fetchWebhookStatus();
+        return true;
+      } else {
+        setError(response.error || 'Error al configurar el webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error configuring webhook:', err);
+      setError('Error de conexión al configurar el webhook');
+      return false;
+    }
+  }, [post, fetchWebhookStatus, isAdminMode]);
+
+  const testWebhook = useCallback(async (): Promise<WebhookTestResult | null> => {
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_TEST : API_ENDPOINTS.USER_WEBHOOK_TEST;
+      console.log('🔄 Testing webhook...', isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await post<WebhookTestResult>(endpoint);
+      if (response.success && response.data) {
+        console.log('✅ Webhook tested:', response.data);
+        return response.data;
+      } else {
+        setError(response.error || 'Error al probar el webhook');
+        return null;
+      }
+    } catch (err) {
+      console.error('Error testing webhook:', err);
+      setError('Error de conexión al probar el webhook');
+      return null;
+    }
+  }, [post, isAdminMode]);
+
+  const disableWebhook = useCallback(async (): Promise<boolean> => {
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_DISABLE : API_ENDPOINTS.USER_WEBHOOK_DISABLE;
+      console.log('🔄 Disabling webhook...', isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await post(endpoint);
+      if (response.success) {
+        console.log('✅ Webhook disabled');
+        await fetchWebhookStatus();
+        return true;
+      } else {
+        setError(response.error || 'Error al deshabilitar el webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error disabling webhook:', err);
+      setError('Error de conexión al deshabilitar el webhook');
+      return false;
+    }
+  }, [post, fetchWebhookStatus, isAdminMode]);
+
+  const setWebhookFilter = useCallback(async (filterEnabled: boolean, filterCondition?: string, filterValue?: string): Promise<boolean> => {
+    if (filterEnabled && (!filterCondition || !filterValue)) {
+      setError('filterCondition y filterValue son requeridos cuando filterEnabled es true');
+      return false;
+    }
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOK_FILTER : API_ENDPOINTS.USER_WEBHOOK_FILTER;
+      console.log('🔄 Setting webhook filter...', isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await post(endpoint, { filterEnabled, filterCondition, filterValue });
+      if (response.success) {
+        console.log('✅ Webhook filter set');
+        await fetchWebhookStatus();
+        return true;
+      } else {
+        setError(response.error || 'Error al configurar el filtro del webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error setting webhook filter:', err);
+      setError('Error de conexión al configurar el filtro del webhook');
+      return false;
+    }
+  }, [post, fetchWebhookStatus, isAdminMode]);
+
+  const saveWebhook = useCallback(async (data: { name: string; url: string; description?: string; serviceId?: string; token?: string; assistantId?: string; filterEnabled?: boolean; filterCondition?: string; filterValue?: string; }): Promise<boolean> => {
+    if (!data.name || !data.url) {
+      setError('name y url son requeridos');
+      return false;
+    }
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_SAVE : API_ENDPOINTS.USER_WEBHOOKS_SAVE;
+      console.log('🔄 Saving webhook:', data.name, isAdminMode ? '(admin mode)' : '(user mode)', { serviceId: data.serviceId, token: data.token });
+      const response = await post(endpoint, { name: data.name, url: data.url, description: data.description, serviceId: data.serviceId, token: data.token, assistantId: data.assistantId, filterEnabled: data.filterEnabled, filterCondition: data.filterCondition, filterValue: data.filterValue });
+      if (response.success) {
+        console.log('✅ Webhook saved:', data.name);
+        await fetchSavedWebhooks();
+        return true;
+      } else {
+        setError(response.error || 'Error al guardar el webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error saving webhook:', err);
+      setError('Error de conexión al guardar el webhook');
+      return false;
+    }
+  }, [post, fetchSavedWebhooks, isAdminMode]);
+
+  const updateWebhook = useCallback(async (id: number, data: { name?: string; url?: string; description?: string; serviceId?: string; token?: string; assistantId?: string; isEnabled?: boolean; filterEnabled?: boolean; filterCondition?: string; filterValue?: string; }): Promise<boolean> => {
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? `${API_ENDPOINTS.WEBHOOKS_SAVE}/${id}` : API_ENDPOINTS.USER_WEBHOOKS_UPDATE(id.toString());
+      console.log('🔄 Updating webhook:', id, isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await put(endpoint, data);
+      if (response.success) {
+        console.log('✅ Webhook updated:', id);
+        await fetchSavedWebhooks();
+        return true;
+      } else {
+        setError(response.error || 'Error al actualizar el webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error updating webhook:', err);
+      setError('Error de conexión al actualizar el webhook');
+      return false;
+    }
+  }, [put, fetchSavedWebhooks, isAdminMode]);
+
+  const deleteWebhook = useCallback(async (id: number): Promise<boolean> => {
+    try {
+      setError(null);
+      const endpoint = isAdminMode ? API_ENDPOINTS.WEBHOOKS_DELETE(id.toString()) : API_ENDPOINTS.USER_WEBHOOKS_DELETE(id.toString());
+      console.log('🔄 Deleting webhook:', id, isAdminMode ? '(admin mode)' : '(user mode)');
+      const response = await deleteRequest(endpoint);
+      if (response.success) {
+        console.log('✅ Webhook deleted:', id);
+        await fetchSavedWebhooks();
+        return true;
+      } else {
+        setError(response.error || 'Error al eliminar el webhook');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error deleting webhook:', err);
+      setError('Error de conexión al eliminar el webhook');
+      return false;
+    }
+  }, [deleteRequest, fetchSavedWebhooks, isAdminMode]);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      setIsLoading(true);
+      Promise.all([fetchWebhookStatus(), fetchSavedWebhooks()]).finally(() => {
+        setIsLoading(false);
+      });
+    } else if (!authLoading && !isAuthenticated) {
+      setWebhookStatus(null);
+      setSavedWebhooks([]);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated, authLoading, fetchWebhookStatus, fetchSavedWebhooks]);
+
+  return {
+    webhookStatus,
+    savedWebhooks,
+    isLoading,
+    error,
+    refetchStatus: fetchWebhookStatus,
+    refetchSaved: fetchSavedWebhooks,
+    configureWebhook,
+    testWebhook,
+    disableWebhook,
+    setWebhookFilter,
+    saveWebhook,
+    updateWebhook,
+    deleteWebhook
+  };
+};
